@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@theme {
+  /* Cores Base */
+  --color-rpg-bg: #121214;
+  --color-rpg-card: #1E1F22;
+  
+  /* Cores de Destaque */
+  --color-rpg-primary: #dce305;
+  --color-rpg-secondary: #00f0ff;
+
+  /* Tipografia */
+  --font-sans: "Inter", "Space Grotesk", sans-serif;
+  
+  /* Arredondamentos customizados para consistência */
+  --radius-xl: 0.75rem;
+}
+
+/* Aplicando o fundo escuro globalmente */
+@layer base {
+  body {
+    @apply bg-rpg-bg text-gray-200 font-sans antialiased;
+  }
+}

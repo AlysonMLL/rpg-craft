@@ -1,0 +1,19 @@
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+backend/venv/
+
+# Frontend dependencies and builds
+frontend/node_modules/
+frontend/dist/
+
+# Logs and local editor files
+*.log
+.vscode/
+.idea/
