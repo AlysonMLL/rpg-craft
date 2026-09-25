@@ -17,3 +17,7 @@ frontend/dist/
 *.log
 .vscode/
 .idea/
+
+# postman 
+postman/
+.postman/
