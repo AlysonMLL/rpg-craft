@@ -29,9 +29,33 @@ export interface World {
   tags: Tag[];
 }
 
+export interface WorldCreateData {
+  name: string;
+  synopsis: string;
+  is_demo: boolean;
+  tags: number[];
+}
+
 export const worldService = {
   getAllWorlds: async (): Promise<World[]> => {
     const response = await apiClient.get<World[]>('worlds/');
     return response.data;
+  },
+
+  getWorldById: async (id: string | number): Promise<World> => {
+    const response = await apiClient.get<World>(`worlds/${id}/`);
+    return response.data;
+  },
+  
+  // método para o POST
+  createWorld: async (data: WorldCreateData): Promise<World> => {
+    const response = await apiClient.post<World>('worlds/', data);
+    return response.data;
+  },
+
+  getAllTags: async (): Promise<Tag[]> => {
+    const response = await apiClient.get<Tag[]>('tags/');
+    return response.data;
   }
 };
+

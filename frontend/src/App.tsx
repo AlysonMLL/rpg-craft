@@ -15,6 +15,7 @@ import { authService } from './api/auth';
 import Login from './pages/Login';
 import Home from './pages/Home'; // Dashboard principal
 import MainLayout from './components/layout/MainLayout';
+import WorldDetail from './pages/WorldDetail';
 
 // Guarda de Rota
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -40,6 +41,8 @@ export default function App() {
         {/* O 'index' significa que a Home renderiza no path="/" */}
         <Route index element={<Home />} />
         
+        
+        <Route path="world/:id" element={<WorldDetail />} />
         {/* Futuras rotas entram aqui sem precisar importar a Sidebar nelas */}
         {/* <Route path="notebook" element={<Notebook />} /> */}
       </Route>

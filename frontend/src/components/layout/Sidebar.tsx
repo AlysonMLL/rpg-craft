@@ -51,7 +51,7 @@ export default function Sidebar() {
           
           <button 
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-rpg-primary hover:text-white p-2 rounded-md hover:bg-rpg-card transition-colors flex-shrink-0"
+            className="text-rpg-primary hover:text-white p-2 rounded-md hover:bg-rpg-card transition-colors shrink-0"
             title={isExpanded ? "Recolher menu" : "Expandir menu"}
           >
             {isExpanded ? <PanelLeftClose size={24} /> : <Menu size={24} />}
@@ -101,7 +101,7 @@ export default function Sidebar() {
       </div>
 
       {/* BASE: Status do Plano (Oculto se a barra estiver retraída) */}
-      <div className="p-4 border-t border-gray-800/80 bg-rpg-bg min-h-[100px] flex items-center justify-center overflow-hidden">
+      <div className="p-4 border-t border-gray-800/80 bg-rpg-bg min-h-25 flex items-center justify-center overflow-hidden">
         {isExpanded ? (
           <div className="bg-rpg-card p-4 rounded-xl border border-gray-800/60 shadow-sm w-full animate-in fade-in duration-300">
             <div className="flex items-center justify-between text-xs mb-3">
