@@ -1,10 +1,9 @@
 /**
  * O que há aqui:
- * - Captura de parâmetros da URL (useParams) para identificar qual mundo carregar.
- * - Header imersivo (Hero Banner) blindado com posicionamento absoluto para evitar colapso.
- * - Layout Principal reescrito usando CSS Grid (grid-cols-12) para garantir a exibição da Sidebar.
- * - Grid de Módulos ajustado para 'md:grid-cols-2' para não ocupar a tela toda em monitores médios.
- * - Atualização sintática total para o Tailwind CSS v4 (bg-linear-*).
+ * - Hero Banner blindado com style={{ minHeight: '320px' }} para ignorar bugs de compilação de altura.
+ * - Layout Flexbox rebaixado para 'md:flex-row', garantindo que a Sidebar da direita NUNCA suma no Desktop.
+ * - Conteúdo do banner alinhado de forma natural com Flexbox (mt-auto) e não mais 'absolute', evitando cortes.
+ * - Gradientes rigorosamente atualizados para a nova sintaxe v4 (bg-linear-to-*).
  * 
  * Função do arquivo: Atuar como o "Menu Principal" de uma campanha específica.
  */
@@ -61,9 +60,11 @@ export default function WorldDetail() {
   return (
     <div className="w-full flex flex-col relative overflow-x-hidden min-h-screen bg-rpg-bg">
       
-      {/* 1. HERO BANNER (Topo) - Blindado com Altura Fixa e Posicionamento Absoluto */}
-      <div className="relative w-full shrink-0 bg-gray-900 h-64 md:h-80 overflow-hidden">
-        
+      {/* 1. HERO BANNER - Blindado com style inline para garantir altura */}
+      <div 
+        className="relative w-full bg-gray-900 shrink-0 flex flex-col justify-end"
+        style={{ minHeight: '320px' }}
+      >
         {/* Imagem ou Fundo Base */}
         {world.cover_image ? (
           <img src={world.cover_image} alt={world.name} className="absolute inset-0 w-full h-full object-cover z-0" />
@@ -75,22 +76,24 @@ export default function WorldDetail() {
         <div className="absolute inset-0 bg-linear-to-t from-rpg-bg via-rpg-bg/60 to-transparent z-10" />
         <div className="absolute inset-0 bg-linear-to-r from-rpg-bg via-rpg-bg/40 to-transparent z-10" />
 
-        {/* Botão Voltar (Fixo no topo-esquerdo) */}
-        <button 
-          onClick={() => navigate('/')}
-          className="absolute top-6 left-6 md:left-8 z-20 flex items-center gap-2 text-gray-300 hover:text-white bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-gray-700 hover:border-gray-500 transition-all text-sm font-medium"
-        >
-          <ChevronLeft size={18} /> Voltar
-        </button>
+        {/* Botão Voltar (Fixo na tela, acima do gradiente) */}
+        <div className="absolute top-6 left-6 md:left-8 z-30">
+          <button 
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-gray-300 hover:text-white bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg border border-gray-700 hover:border-gray-500 transition-all text-sm font-medium"
+          >
+            <ChevronLeft size={18} /> Voltar
+          </button>
+        </div>
 
-        {/* Título e Tags (Fixo na base do banner) */}
-        <div className="absolute bottom-6 left-6 md:left-8 lg:left-12 z-20 max-w-4xl">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-3 drop-shadow-lg tracking-tight">
+        {/* Título e Tags (No fluxo flexível, impossível de ser cortado) */}
+        <div className="relative z-20 w-full max-w-7xl mx-auto p-6 md:p-8 flex flex-col justify-end mt-auto">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 drop-shadow-lg tracking-tight">
             {world.name}
           </h1>
           <div className="flex flex-wrap gap-2">
             {world.tags.map(tag => (
-              <span key={tag.id} className="text-xs font-bold text-rpg-secondary bg-rpg-secondary/10 px-2.5 py-1 rounded border border-rpg-secondary/30 backdrop-blur-md">
+              <span key={tag.id} className="text-xs font-bold text-rpg-secondary bg-rpg-secondary/10 px-3 py-1.5 rounded border border-rpg-secondary/30 backdrop-blur-md">
                 {tag.name}
               </span>
             ))}
@@ -98,30 +101,30 @@ export default function WorldDetail() {
         </div>
       </div>
 
-      {/* 2. CONTEÚDO PRINCIPAL - Usando CSS Grid (12 Colunas) para blindar a Sidebar */}
-      <div className="w-full max-w-7xl mx-auto p-6 md:p-8 lg:p-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start relative z-10">
+      {/* 2. CONTEÚDO PRINCIPAL E SIDEBAR DIREITA */}
+      {/* O md:flex-row garante que em monitores normais a tela será dividida em duas colunas */}
+      <div className="w-full max-w-7xl mx-auto p-6 md:p-8 flex flex-col md:flex-row gap-8 lg:gap-12 items-start relative z-10">
         
-        {/* COLUNA ESQUERDA: Grid de Módulos (Ocupa 8 colunas) */}
-        <div className="lg:col-span-8 xl:col-span-9 w-full space-y-8">
+        {/* COLUNA ESQUERDA: Grid de Módulos (min-w-0 impede que o flexbox quebre) */}
+        <div className="flex-1 min-w-0 w-full space-y-8">
           
           <div>
             <h2 className="text-2xl font-bold text-white">Início</h2>
             <p className="text-gray-400">Visão geral de {world.name}</p>
           </div>
 
-          {/* Cards quebram em 2 colunas logo a partir do 'md' */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {modules.map((mod, idx) => (
               <button 
                 key={idx}
-                // Adicionado: items-start, text-left e w-full para evitar o comportamento padrão de botão
-                className="bg-rpg-card border border-gray-800 rounded-xl p-5 hover:border-rpg-primary/50 hover:bg-gray-800/50 transition-all group relative overflow-hidden flex flex-col items-start text-left justify-between min-h-35 w-full"
+                className="bg-rpg-card border border-gray-800 rounded-xl p-5 hover:border-rpg-primary/50 hover:bg-gray-800/50 transition-all group relative overflow-hidden flex flex-col items-start justify-between text-left w-full"
+                style={{ minHeight: '140px' }} // Altura garantida
               >
                 <div className="absolute inset-0 bg-linear-to-r from-rpg-primary/0 via-rpg-primary/0 to-rpg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 
                 <div className="flex items-start justify-between w-full mb-3 relative z-10">
                   <div className={`p-2 rounded-lg bg-gray-900 border border-gray-700/50 ${mod.color}`}>
-                    <mod.icon size={20} />
+                    <mod.icon size={22} />
                   </div>
                   <span className="text-3xl font-black text-gray-800 group-hover:text-gray-700 transition-colors">
                     {mod.count}
@@ -130,7 +133,7 @@ export default function WorldDetail() {
                 
                 <div className="relative z-10 w-full mt-auto">
                   <h3 className="text-lg font-bold text-white mb-1 group-hover:text-rpg-primary transition-colors">{mod.title}</h3>
-                  <p className="text-sm text-gray-500">{mod.desc}</p>
+                  <p className="text-sm text-gray-500 leading-snug">{mod.desc}</p>
                 </div>
               </button>
             ))}
@@ -147,27 +150,27 @@ export default function WorldDetail() {
 
         </div>
 
-        {/* COLUNA DIREITA: Índice de Seções (Ocupa 4 colunas) */}
-        {/* A classe lg:block esconde no celular e mostra no Desktop, garantindo espaço com o CSS Grid */}
-        <div className="hidden lg:block lg:col-span-4 xl:col-span-3 w-full sticky top-8">
-          <div className="bg-rpg-card border border-gray-800 rounded-xl p-4 shadow-sm">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 px-3">Seções</p>
+        {/* COLUNA DIREITA: Índice de Seções (Sidebar Interna) */}
+        {/* Alterado para md:block para NUNCA sumir em monitores desktop */}
+        <div className="hidden md:block w-56 lg:w-64 shrink-0 sticky top-8">
+          <div className="bg-rpg-card border border-gray-800 rounded-xl p-5 shadow-sm">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 px-2">Seções</p>
             <nav className="space-y-1">
               {indexLinks.map((link, idx) => (
                 <button 
                   key={idx}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${
                     link.active 
                       ? 'bg-gray-800 text-rpg-primary font-bold' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50 font-medium'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <link.icon size={16} className={link.active ? 'text-rpg-primary' : 'text-gray-500'} />
                     {link.label}
                   </div>
                   {link.count !== undefined && (
-                    <span className="text-xs font-bold text-gray-600 bg-gray-900 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-bold text-gray-500 bg-gray-900 px-2 py-0.5 rounded border border-gray-800">
                       {link.count}
                     </span>
                   )}
