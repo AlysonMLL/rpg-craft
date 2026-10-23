@@ -13,7 +13,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../api/auth';
-import logoRpgCraft from '../assets/logo_rpgcraft.png'; // Usando a logo enviada
+import logoRpgCraft from '../assets/logo_rpgcraft.png'; 
 
 export default function Login() {
   const [username, setUsername] = useState('');
