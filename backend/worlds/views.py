@@ -27,7 +27,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 class WorldViewSet(viewsets.ModelViewSet):
     serializer_class = WorldSerializer
     # Exige que o usuário envie um Token JWT válido no cabeçalho (Authorization: Bearer <token>)
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user
