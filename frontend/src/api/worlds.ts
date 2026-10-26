@@ -27,13 +27,14 @@ export interface World {
   created_at: string;
   owner_name: string;
   tags: Tag[];
+  is_owner: boolean;
 }
 
 export interface WorldCreateData {
   name: string;
   synopsis: string;
   is_demo: boolean;
-  tags: number[];
+  tag_ids: number[];
 }
 
 export const worldService = {

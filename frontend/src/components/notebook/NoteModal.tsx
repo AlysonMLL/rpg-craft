@@ -11,6 +11,10 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Edit3, Eye } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
+
+const schema = { ...defaultSchema, tagNames: [...(defaultSchema.tagNames ?? []), 'u', 'mark'] };
 
 export interface NoteData {
   id?: number;
@@ -76,6 +80,8 @@ export default function NoteModal({ isOpen, initialData, onClose, onSave }: Prop
                 className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-bold transition-colors ${activeTab === 'ler' ? 'bg-rpg-card text-rpg-secondary shadow-sm' : 'text-gray-500 hover:text-white'}`}
               >
                 <Eye size={16} /> Ler
+
+                
               </button>
               <button 
                 onClick={() => setActiveTab('editar')}
@@ -103,7 +109,9 @@ export default function NoteModal({ isOpen, initialData, onClose, onSave }: Prop
           ) : (
             <div className="w-full h-full overflow-y-auto text-gray-300 prose prose-invert prose-p:leading-relaxed prose-headings:text-white prose-a:text-rpg-primary max-w-none">
               {content ? (
-                <ReactMarkdown>{content}</ReactMarkdown>
+                <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, schema]]}>
+                  {content}
+                </ReactMarkdown>
               ) : (
                 <span className="text-gray-600 italic">Esta anotação está vazia...</span>
               )}

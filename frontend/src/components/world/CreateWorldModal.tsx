@@ -19,7 +19,7 @@ interface Props {
 }
 
 export default function CreateWorldModal({ isOpen, onClose, onSuccess }: Props) {
-  const [formData, setFormData] = useState<WorldCreateData>({ name: '', synopsis: '', is_demo: false, tags: [] });
+  const [formData, setFormData] = useState<WorldCreateData>({ name: '', synopsis: '', is_demo: false, tag_ids: [] });
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,12 +33,12 @@ export default function CreateWorldModal({ isOpen, onClose, onSuccess }: Props) 
 
   const toggleTag = (tagId: number) => {
     setFormData(prev => {
-      const isSelected = prev.tags.includes(tagId);
+      const isSelected = prev.tag_ids.includes(tagId);
       return {
         ...prev,
-        tags: isSelected 
-          ? prev.tags.filter(id => id !== tagId) 
-          : [...prev.tags, tagId]
+        tag_ids: isSelected
+          ? prev.tag_ids.filter(id => id !== tagId)
+          : [...prev.tag_ids, tagId]
       };
     });
   };
@@ -49,7 +49,7 @@ export default function CreateWorldModal({ isOpen, onClose, onSuccess }: Props) 
     try {
       await worldService.createWorld(formData);
       onSuccess();
-      setFormData({ name: '', synopsis: '', is_demo: false, tags: [] }); // Reseta o form
+      setFormData({ name: '', synopsis: '', is_demo: false, tag_ids: [] }); // Reseta o form
       onClose();
     } catch (error) {
       console.error("Erro ao criar mundo:", error);
@@ -91,7 +91,7 @@ export default function CreateWorldModal({ isOpen, onClose, onSuccess }: Props) 
             </label>
             <div className="flex flex-wrap gap-2">
               {availableTags.map(tag => {
-                const isSelected = formData.tags.includes(tag.id);
+                const isSelected = formData.tag_ids.includes(tag.id);
                 return (
                   <button
                     key={tag.id}

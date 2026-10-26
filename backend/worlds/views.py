@@ -24,18 +24,26 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     # Tags são públicas, qualquer um pode ver a lista para popular um select no frontend
     permission_classes = [permissions.AllowAny] 
 
+class IsOwnerOrReadOnly(permissions.BasePermission):
+     
+     def has_object_permission(self, request, view, obj):
+        return request.method in permissions.SAFE_METHODS or obj.owner_id == request.user.id
+
 class WorldViewSet(viewsets.ModelViewSet):
     serializer_class = WorldSerializer
     # Exige que o usuário envie um Token JWT válido no cabeçalho (Authorization: Bearer <token>)
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def get_queryset(self):
         user = self.request.user
-        # Retorna os mundos que pertencem ao usuário logado OU que são mundos de demonstração pública
-        return World.objects.filter(
-            Q(owner=user) | Q(is_demo=True)
-        ).prefetch_related('tags').select_related('owner').distinct()
+        qs = World.objects.prefetch_related('tags').select_related('owner')
+        if not user.is_authenticated:
+            return qs.filter(is_demo=True)
+        return qs.filter(Q(owner=user) | Q(is_demo=True)).distinct()
 
     def perform_create(self, serializer):
         # Quando o frontend manda um POST para criar um RPG, o Django atrela o dono automaticamente
         serializer.save(owner=self.request.user)
+
+    
+   
