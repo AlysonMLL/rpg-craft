@@ -45,7 +45,7 @@ export default function Sidebar() {
             <img 
               src={logoRpgCraft} 
               alt="RPG.Craft" 
-              className="h-8 object-contain drop-shadow-md animate-in fade-in duration-300" 
+              className="h-12 object-contain drop-shadow-md animate-in fade-in duration-300" 
             />
           )}
           
