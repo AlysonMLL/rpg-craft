@@ -2,24 +2,71 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  /* Cores Base */
+  /* Superfícies */
   --color-rpg-bg: #121214;
   --color-rpg-card: #1E1F22;
-  
-  /* Cores de Destaque */
+
+  /* Marca */
   --color-rpg-primary: #dce305;
+  --color-rpg-primary-hover: #c5cc04;
   --color-rpg-secondary: #00f0ff;
 
+  /* Texto secundário (contraste >= 4.5:1 sobre rpg-bg e rpg-card).
+     Evite text-gray-500 para texto legível: dá ~3.4:1 sobre rpg-card. */
+  --color-rpg-muted: #9ca3af;
+  --color-rpg-subtle: #8a8f99;
+
+  /* Feedback */
+  --color-rpg-success: #4ade80;
+  --color-rpg-danger: #f87171;
+
   /* Tipografia */
-  --font-sans: "Inter", "Space Grotesk", sans-serif;
-  
-  /* Arredondamentos customizados para consistência */
-  --radius-xl: 0.75rem;
+  --font-sans: "Inter Variable", "Inter", system-ui, sans-serif;
+
+  /* Brilho neon */
+  --shadow-neon: 0 0 15px rgb(220 227 5 / 0.3);
+  --shadow-neon-soft: 0 0 10px rgb(220 227 5 / 0.1);
+
+  /* Animações (as classes animate-in/fade-in/zoom-in-95 usadas hoje
+     precisam do plugin tailwindcss-animate e não fazem nada sem ele) */
+  --animate-fade-in: fade-in 200ms ease-out;
+  --animate-pop-in: pop-in 160ms ease-out;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes pop-in {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+  }
 }
 
-/* Aplicando o fundo escuro globalmente */
 @layer base {
+  html {
+    color-scheme: dark; /* scrollbars e controles nativos escuros */
+  }
+
   body {
     @apply bg-rpg-bg text-gray-200 font-sans antialiased;
+  }
+
+  /* Foco visível só no teclado; campos de texto usam o próprio anel */
+  :where(a, button, summary, [role="button"]):focus-visible {
+    outline: 2px solid var(--color-rpg-secondary);
+    outline-offset: 2px;
+  }
+
+  /* Trava a rolagem da página com modal aberto */
+  body:has(dialog[open]) {
+    overflow: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

@@ -16,6 +16,8 @@ import Login from './pages/Login';
 import Home from './pages/Home'; // Dashboard principal
 import MainLayout from './components/layout/MainLayout';
 import WorldDetail from './pages/WorldDetail';
+import DevUI from './pages/DevUI';
+import { Toaster } from './components/ui';
 
 // Guarda de Rota
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -27,27 +29,31 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
+    <>
+      <Routes>
+        <Route path="/login" element={<Login />} />
 
-      {/* Rotas Privadas agrupadas dentro do MainLayout */}
-      <Route 
-        element={
-          <ProtectedRoute>
-            <MainLayout />
-          </ProtectedRoute>
-        }
-      >
-        {/* O 'index' significa que a Home renderiza no path="/" */}
-        <Route index element={<Home />} />
+        {/* Rotas Privadas agrupadas dentro do MainLayout */}
+        <Route 
+          element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
+          {/* O 'index' significa que a Home renderiza no path="/" */}
+          <Route index element={<Home />} />
+          
+          
+          <Route path="world/:id" element={<WorldDetail />} />
+          {import.meta.env.DEV && <Route path="dev/ui" element={<DevUI />} />}
+          {/* Futuras rotas entram aqui sem precisar importar a Sidebar nelas */}
+          {/* <Route path="notebook" element={<Notebook />} /> */}
+        </Route>
         
-        
-        <Route path="world/:id" element={<WorldDetail />} />
-        {/* Futuras rotas entram aqui sem precisar importar a Sidebar nelas */}
-        {/* <Route path="notebook" element={<Notebook />} /> */}
-      </Route>
-      
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <Toaster />
+    </>
   );
 }
