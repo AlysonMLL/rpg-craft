@@ -11,10 +11,6 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Edit3, Eye } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
-import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
-
-const schema = { ...defaultSchema, tagNames: [...(defaultSchema.tagNames ?? []), 'u', 'mark'] };
 
 export interface NoteData {
   id?: number;
@@ -27,9 +23,11 @@ interface Props {
   initialData: NoteData | null;
   onClose: () => void;
   onSave: (note: NoteData) => void;
+  /** Modo convidado: só leitura (sem aba Editar nem botão Salvar) */
+  readOnly?: boolean;
 }
 
-export default function NoteModal({ isOpen, initialData, onClose, onSave }: Props) {
+export default function NoteModal({ isOpen, initialData, onClose, onSave, readOnly = false }: Props) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [activeTab, setActiveTab] = useState<'ler' | 'editar'>('ler');
@@ -38,7 +36,7 @@ export default function NoteModal({ isOpen, initialData, onClose, onSave }: Prop
     if (isOpen) {
       setTitle(initialData?.title || '');
       setContent(initialData?.content || '');
-      setActiveTab(initialData?.id ? 'ler' : 'editar');
+      setActiveTab(readOnly || initialData?.id ? 'ler' : 'editar');
     }
   }, [isOpen, initialData]);
 
@@ -80,15 +78,15 @@ export default function NoteModal({ isOpen, initialData, onClose, onSave }: Prop
                 className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-bold transition-colors ${activeTab === 'ler' ? 'bg-rpg-card text-rpg-secondary shadow-sm' : 'text-gray-500 hover:text-white'}`}
               >
                 <Eye size={16} /> Ler
-
-                
               </button>
-              <button 
-                onClick={() => setActiveTab('editar')}
-                className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-bold transition-colors ${activeTab === 'editar' ? 'bg-rpg-card text-rpg-primary shadow-sm' : 'text-gray-500 hover:text-white'}`}
-              >
-                <Edit3 size={16} /> Editar
-              </button>
+              {!readOnly && (
+                <button 
+                  onClick={() => setActiveTab('editar')}
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-bold transition-colors ${activeTab === 'editar' ? 'bg-rpg-card text-rpg-primary shadow-sm' : 'text-gray-500 hover:text-white'}`}
+                >
+                  <Edit3 size={16} /> Editar
+                </button>
+              )}
             </div>
             
             <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors p-1">
@@ -109,9 +107,7 @@ export default function NoteModal({ isOpen, initialData, onClose, onSave }: Prop
           ) : (
             <div className="w-full h-full overflow-y-auto text-gray-300 prose prose-invert prose-p:leading-relaxed prose-headings:text-white prose-a:text-rpg-primary max-w-none">
               {content ? (
-                <ReactMarkdown rehypePlugins={[rehypeRaw, [rehypeSanitize, schema]]}>
-                  {content}
-                </ReactMarkdown>
+                <ReactMarkdown>{content}</ReactMarkdown>
               ) : (
                 <span className="text-gray-600 italic">Esta anotação está vazia...</span>
               )}
@@ -122,13 +118,16 @@ export default function NoteModal({ isOpen, initialData, onClose, onSave }: Prop
         {/* RODAPÉ DO MODAL */}
         <div className="p-4 border-t border-gray-800 bg-rpg-card flex justify-end gap-3">
           <button onClick={onClose} className="px-6 py-2 rounded-lg font-medium text-white bg-gray-800 hover:bg-gray-700 transition-colors">
-            Cancelar
+            {readOnly ? 'Fechar' : 'Cancelar'}
           </button>
-          <button onClick={handleSave} className="flex items-center gap-2 px-6 py-2 rounded-lg font-bold text-black bg-rpg-primary hover:bg-[#c5cc04] transition-colors">
-            <Save size={18} /> Salvar Anotação
-          </button>
+          {!readOnly && (
+            <button onClick={handleSave} className="flex items-center gap-2 px-6 py-2 rounded-lg font-bold text-black bg-rpg-primary hover:bg-[#c5cc04] transition-colors">
+              <Save size={18} /> Salvar Anotação
+            </button>
+          )}
         </div>
       </div>
     </div>
   );
 }
+

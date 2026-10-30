@@ -36,8 +36,8 @@ export default function CreateWorldModal({ isOpen, onClose, onSuccess }: Props) 
       const isSelected = prev.tag_ids.includes(tagId);
       return {
         ...prev,
-        tag_ids: isSelected
-          ? prev.tag_ids.filter(id => id !== tagId)
+        tag_ids: isSelected 
+          ? prev.tag_ids.filter(id => id !== tagId) 
           : [...prev.tag_ids, tagId]
       };
     });
@@ -129,3 +129,4 @@ export default function CreateWorldModal({ isOpen, onClose, onSuccess }: Props) 
     </div>
   );
 }
+

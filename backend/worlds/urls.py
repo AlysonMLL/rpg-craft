@@ -1,6 +1,7 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import WorldViewSet, TagViewSet
+
+from .views import TagViewSet, WorldViewSet
 
 router = DefaultRouter()
 router.register(r'worlds', WorldViewSet, basename='world')

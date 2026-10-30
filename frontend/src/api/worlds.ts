@@ -26,8 +26,8 @@ export interface World {
   display_order: number;
   created_at: string;
   owner_name: string;
-  tags: Tag[];
   is_owner: boolean;
+  tags: Tag[];
 }
 
 export interface WorldCreateData {
@@ -59,4 +59,6 @@ export const worldService = {
     return response.data;
   }
 };
+
+
 

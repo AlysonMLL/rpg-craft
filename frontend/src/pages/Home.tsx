@@ -28,11 +28,17 @@ import { worldService, type World } from '../api/worlds';
 import CreateWorldModal from '../components/world/CreateWorldModal';
 import NoteModal, { type NoteData } from '../components/notebook/NoteModal';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../api/auth';
+import { useCurrentUser } from '../hooks/useCurrentUser';
+import { Button } from '../components/ui';
 
 export default function Home() {
   const [worlds, setWorlds] = useState<World[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  // Modo convidado: somente leitura (o backend também bloqueia escrita)
+  const isGuest = authService.isGuest();
+  const user = useCurrentUser();
 
   // Controles de Modais
   const [isWorldModalOpen, setIsWorldModalOpen] = useState(false);
@@ -70,10 +76,16 @@ export default function Home() {
   }, []);
 
   // Funções de TO-DO
-  const toggleTodo = (id: number) =>
+  const toggleTodo = (id: number) => {
+    if (isGuest) return;
     setTodos(todos.map((t) => (t.id === id ? { ...t, isDone: !t.isDone } : t)));
-  const deleteTodo = (id: number) => setTodos(todos.filter((t) => t.id !== id));
+  };
+  const deleteTodo = (id: number) => {
+    if (isGuest) return;
+    setTodos(todos.filter((t) => t.id !== id));
+  };
   const addTodo = (e: React.KeyboardEvent) => {
+    if (isGuest) return;
     if (e.key === 'Enter' && newTodo.trim()) {
       setTodos([...todos, { id: Date.now(), text: newTodo, isDone: false }]);
       setNewTodo('');
@@ -83,9 +95,11 @@ export default function Home() {
   // Funções de NOTAS
   const deleteNote = (e: React.MouseEvent, id: number) => {
     e.stopPropagation(); // Evita que clicar na lixeira abra o modal
+    if (isGuest) return;
     setNotes(notes.filter((n) => n.id !== id));
   };
   const handleSaveNote = (note: NoteData) => {
+    if (isGuest) return;
     if (note.id) {
       setNotes(notes.map((n) => (n.id === note.id ? note : n)));
     } else {
@@ -94,6 +108,7 @@ export default function Home() {
     setIsNoteModalOpen(false);
   };
   const openNewNote = () => {
+    if (isGuest) return;
     setCurrentNote(null); // Passar null sinaliza que é uma nota nova
     setIsNoteModalOpen(true);
   };
@@ -115,27 +130,34 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button
+          <Button
+            glow
+            leftIcon={<Plus size={18} />}
+            disabled={isGuest}
+            title={isGuest ? 'Disponível após fazer login' : undefined}
             onClick={() => setIsWorldModalOpen(true)} // <-- Abre o Modal
-            className="flex items-center gap-2 bg-rpg-primary text-black font-bold px-4 py-2.5 rounded-lg hover:bg-[#c5cc04] transition-colors text-sm shadow-[0_0_15px_rgba(220,227,5,0.3)]"
           >
-            <Plus size={18} /> Novo RPG
-          </button>
+            Novo RPG
+          </Button>
           <button className="p-2.5 bg-rpg-card border border-gray-800 rounded-lg hover:border-gray-600 transition-colors text-gray-400">
             <Bell size={20} />
           </button>
-          {/* Avatar mockado */}
+          {/* Avatar: inicial do usuário (V de visitante no modo convidado) */}
           <div className="w-10 h-10 rounded-lg bg-gray-700 border border-gray-600 flex items-center justify-center font-bold text-rpg-secondary">
-            M
+            {(isGuest ? 'V' : (user?.username?.[0] ?? '·')).toUpperCase()}
           </div>
         </div>
       </header>
 
       {/* Título de Boas Vindas */}
       <div>
-        <h1 className="text-3xl font-bold text-white mb-1">Olá, Mestre</h1>
+        <h1 className="text-3xl font-bold text-white mb-1">
+          {isGuest ? 'Olá, visitante' : 'Olá, Mestre'}
+        </h1>
         <p className="text-gray-400 text-sm">
-          Bem-vindo de volta ao seu ateliê de mundos.
+          {isGuest
+            ? 'Explore os mundos de exemplo do RPG.Craft.'
+            : 'Bem-vindo de volta ao seu ateliê de mundos.'}
         </p>
       </div>
 
@@ -148,7 +170,7 @@ export default function Home() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-white flex items-center gap-2">
                 <Users size={18} className="text-rpg-secondary" />
-                Seus RPGs{' '}
+                {isGuest ? 'Mundos de exemplo' : 'Seus RPGs'}{' '}
                 <span className="text-gray-500 text-sm font-normal">
                   ({worlds.length})
                 </span>
@@ -252,12 +274,14 @@ export default function Home() {
                 <Book size={16} className="text-rpg-primary" />
                 Notas Rápidas
               </h3>
-              <button
-                onClick={openNewNote}
-                className="text-xs text-rpg-primary hover:text-white transition-colors font-bold"
-              >
-                + Nova
-              </button>
+              {!isGuest && (
+                <button
+                  onClick={openNewNote}
+                  className="text-xs text-rpg-primary hover:text-white transition-colors font-bold"
+                >
+                  + Nova
+                </button>
+              )}
             </div>
 
             <div className="space-y-2 overflow-y-auto pr-1">
@@ -278,13 +302,15 @@ export default function Home() {
                     <p className="text-sm font-medium text-gray-300 truncate pr-4">
                       {note.title}
                     </p>
-                    <button
-                      onClick={(e) => deleteNote(e, note.id!)}
-                      className="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1"
-                      title="Deletar Nota"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    {!isGuest && (
+                      <button
+                        onClick={(e) => deleteNote(e, note.id!)}
+                        className="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1"
+                        title="Deletar Nota"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                   </div>
                 ))
               )}
@@ -305,7 +331,7 @@ export default function Home() {
                 >
                   <div
                     onClick={() => toggleTodo(todo.id)}
-                    className="flex items-center gap-3 cursor-pointer flex-1"
+                    className={`flex items-center gap-3 flex-1 ${isGuest ? 'cursor-default' : 'cursor-pointer'}`}
                   >
                     {todo.isDone ? (
                       <CheckSquare
@@ -324,23 +350,27 @@ export default function Home() {
                       {todo.text}
                     </span>
                   </div>
-                  <button
-                    onClick={() => deleteTodo(todo.id)}
-                    className="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {!isGuest && (
+                    <button
+                      onClick={() => deleteTodo(todo.id)}
+                      className="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
-            <input
-              type="text"
-              value={newTodo}
-              onChange={(e) => setNewTodo(e.target.value)}
-              onKeyDown={addTodo}
-              placeholder="+ Adicionar tarefa (Enter)"
-              className="w-full bg-rpg-bg border border-gray-800 rounded px-3 py-2 text-sm text-white focus:border-rpg-primary focus:outline-none mt-3"
-            />
+            {!isGuest && (
+              <input
+                type="text"
+                value={newTodo}
+                onChange={(e) => setNewTodo(e.target.value)}
+                onKeyDown={addTodo}
+                placeholder="+ Adicionar tarefa (Enter)"
+                className="w-full bg-rpg-bg border border-gray-800 rounded px-3 py-2 text-sm text-white focus:border-rpg-primary focus:outline-none mt-3"
+              />
+            )}
           </div>
 
           {/* Widget de Atividade Recente */}
@@ -381,7 +411,10 @@ export default function Home() {
         initialData={currentNote}
         onClose={() => setIsNoteModalOpen(false)}
         onSave={handleSaveNote}
+        readOnly={isGuest}
       />
     </div>
   );
 }
+
+

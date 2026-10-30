@@ -1,3 +1,3 @@
 from django.test import TestCase
 
-# Create your tests here.
+# TODO: Implementar testes unitários para as views de World e Tag.
