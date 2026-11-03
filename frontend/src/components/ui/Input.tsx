@@ -7,46 +7,8 @@
 import { useId } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import { cn } from '../../lib/cn';
-
-const base =
-  'w-full rounded-lg border bg-rpg-bg px-4 py-2.5 text-sm text-white transition-colors ' +
-  'placeholder:text-rpg-subtle focus:outline-none focus:ring-1 disabled:opacity-50';
-const okState = 'border-gray-700 focus:border-rpg-primary focus:ring-rpg-primary';
-const badState = 'border-red-400/60 focus:border-red-400 focus:ring-red-400';
-
-interface FieldShellProps {
-  id: string;
-  label?: string;
-  hint?: string;
-  error?: string;
-  required?: boolean;
-  children: ReactNode;
-}
-
-function FieldShell({ id, label, hint, error, required, children }: FieldShellProps) {
-  return (
-    <div>
-      {label && (
-        <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-rpg-muted">
-          {label}
-          {required && <span className="text-rpg-primary"> *</span>}
-        </label>
-      )}
-      {children}
-      {error ? (
-        <p id={`${id}-error`} className="mt-1.5 text-xs text-rpg-danger">
-          {error}
-        </p>
-      ) : (
-        hint && (
-          <p id={`${id}-hint`} className="mt-1.5 text-xs text-rpg-subtle">
-            {hint}
-          </p>
-        )
-      )}
-    </div>
-  );
-}
+import { fieldBad, fieldBase, fieldOk } from '../../lib/fieldStyles';
+import { FieldShell } from './FieldShell';
 
 interface InputProps extends Omit<ComponentProps<'input'>, 'size'> {
   label?: string;
@@ -85,8 +47,8 @@ export function Input({
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={cn(
-            base,
-            error ? badState : okState,
+            fieldBase,
+            error ? fieldBad : fieldOk,
             leftIcon && 'pl-10',
             rightSlot && 'pr-11',
             className,
@@ -121,7 +83,7 @@ export function Textarea({ label, hint, error, className, id, required, ...rest 
         required={required}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className={cn(base, 'resize-none', error ? badState : okState, className)}
+        className={cn(fieldBase, 'resize-none', error ? fieldBad : fieldOk, className)}
         {...rest}
       />
     </FieldShell>

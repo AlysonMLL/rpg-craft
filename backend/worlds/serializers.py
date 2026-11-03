@@ -32,13 +32,18 @@ class WorldSerializer(serializers.ModelSerializer):
             'synopsis',
             'introduction_markdown',
             'is_demo',
+            'is_favorite',
             'display_order',
             'created_at',
+            'updated_at',
+            'last_activity_at',
             'owner_name',
             'is_owner',
             'tags',
             'tag_ids',
         ]
+        # A ordem só muda pelo endpoint /worlds/reorder/ e a atividade pelo log
+        read_only_fields = ['display_order', 'updated_at', 'last_activity_at']
 
     def get_is_owner(self, obj):
         request = self.context.get('request')

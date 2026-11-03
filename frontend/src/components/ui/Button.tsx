@@ -1,9 +1,11 @@
 /**
  * Botão base do RPG.Craft.
  * - variant: primary (ação principal), outline (ação secundária de destaque,
- *   ex: "Novo Mapa"), secondary, ghost, danger.
- * - loading: mostra spinner e desabilita.
- * - glow: brilho neon (só no primary).
+ *   ex: "Novo mapa"), secondary, ghost, danger.
+ * - Hover do primary e do outline = INVERSÃO de cores (primary: fundo preto,
+ *   texto e borda #dce305; outline: preenche de amarelo com texto preto), com
+ *   leve elevação só quando o sistema permite movimento (motion-safe).
+ * - loading: mostra spinner e desabilita. glow: brilho neon (só no primary).
  * type padrão é "button"; use type="submit" em formulários.
  */
 import type { ComponentProps, ReactNode } from 'react';
@@ -22,14 +24,24 @@ interface ButtonProps extends ComponentProps<'button'> {
   leftIcon?: ReactNode;
 }
 
+const lift =
+  'motion-safe:enabled:hover:-translate-y-0.5 motion-safe:enabled:active:translate-y-0';
+
 const variants: Record<Variant, string> = {
-  primary: 'bg-rpg-primary text-black hover:bg-rpg-primary-hover',
-  outline:
-    'border border-rpg-primary/40 text-rpg-primary hover:border-rpg-primary hover:bg-rpg-primary/10',
-  secondary: 'bg-gray-800 text-white hover:bg-gray-700',
-  ghost: 'text-gray-300 hover:bg-rpg-card hover:text-white',
+  primary: cn(
+    'border-rpg-primary bg-rpg-primary text-black',
+    'enabled:hover:bg-black enabled:hover:text-rpg-primary',
+    lift,
+  ),
+  outline: cn(
+    'border-rpg-primary/40 text-rpg-primary',
+    'enabled:hover:border-rpg-primary enabled:hover:bg-rpg-primary enabled:hover:text-black',
+    lift,
+  ),
+  secondary: 'border-transparent bg-gray-800 text-white enabled:hover:bg-gray-700',
+  ghost: 'border-transparent text-gray-300 enabled:hover:bg-rpg-card enabled:hover:text-white',
   danger:
-    'border border-red-400/30 bg-red-400/10 text-rpg-danger hover:bg-red-400/20',
+    'border-red-400/30 bg-red-400/10 text-rpg-danger enabled:hover:bg-red-400/20',
 };
 
 const sizes: Record<Size, string> = {
@@ -57,7 +69,7 @@ export function Button({
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        'inline-flex items-center justify-center rounded-lg font-bold transition-colors duration-200',
+        'inline-flex items-center justify-center rounded-lg border font-bold transition-all duration-200',
         'disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none',
         variants[variant],
         sizes[size],

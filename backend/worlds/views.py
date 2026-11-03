@@ -6,6 +6,8 @@ O que há aqui:
   usuário logado vê os próprios mundos mais os 'is_demo'.
 - WorldViewSet.perform_create(): Injeta automaticamente o usuário logado como 'owner'
   do mundo no momento de um POST, dispensando o envio desse dado no JSON da requisição.
+- WorldViewSet.reorder(): POST /worlds/reorder/ com {"ids": [3, 1, 2]} grava a ordem
+  personalizada (arrastar e soltar) dos mundos do usuário numa única transação.
 
 Função do arquivo: Atuar como a camada de Controladores (Views) da API de Mundos.
 Conecta o roteamento HTTP às operações de banco de dados, garantindo as regras de negócio
@@ -13,8 +15,12 @@ de isolamento de dados (Multi-tenancy RLS-like no nível da aplicação) e injet
 contexto de autenticação antes de passar os dados para os serializers.
 """
 
-from rest_framework import viewsets, permissions
+from django.db import transaction
 from django.db.models import Q
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from .models import World, Tag
 from .permissions import IsOwnerOrReadOnly
 from .serializers import WorldSerializer, TagSerializer
@@ -46,3 +52,36 @@ class WorldViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Quando o frontend manda um POST para criar um RPG, o Django atrela o dono automaticamente
         serializer.save(owner=self.request.user)
+
+    @action(detail=False, methods=['post'], url_path='reorder')
+    def reorder(self, request):
+        """Recebe os ids dos mundos do usuário na ordem desejada e grava display_order."""
+        ids = request.data.get('ids')
+        if not isinstance(ids, list) or not all(
+            isinstance(i, int) and not isinstance(i, bool) for i in ids
+        ):
+            return Response(
+                {'detail': 'Envie "ids" como uma lista de números.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if len(set(ids)) != len(ids):
+            return Response(
+                {'detail': 'A lista de ids tem valores repetidos.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Só os mundos do próprio usuário podem ser reordenados (demos de outros não)
+        worlds = {w.id: w for w in World.objects.filter(owner=request.user, id__in=ids)}
+        if len(worlds) != len(ids):
+            return Response(
+                {'detail': 'A lista contém mundos que não existem ou não são seus.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        for position, world_id in enumerate(ids):
+            worlds[world_id].display_order = position
+
+        with transaction.atomic():
+            World.objects.bulk_update(worlds.values(), ['display_order'])
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

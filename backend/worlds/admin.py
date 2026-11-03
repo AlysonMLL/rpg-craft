@@ -7,6 +7,6 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(World)
 class WorldAdmin(admin.ModelAdmin):
-    list_display = ('name', 'owner', 'is_demo', 'created_at')
-    list_filter = ('is_demo', 'tags')
+    list_display = ('name', 'owner', 'is_demo', 'is_favorite', 'display_order', 'created_at')
+    list_filter = ('is_demo', 'is_favorite', 'tags')
     search_fields = ('name', 'synopsis')

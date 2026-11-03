@@ -23,8 +23,11 @@ export interface World {
   synopsis: string;
   introduction_markdown: string | null;
   is_demo: boolean;
+  is_favorite: boolean;
   display_order: number;
   created_at: string;
+  updated_at: string;
+  last_activity_at: string | null;
   owner_name: string;
   is_owner: boolean;
   tags: Tag[];
@@ -54,11 +57,19 @@ export const worldService = {
     return response.data;
   },
 
+  // Favoritar/desfavoritar (a estrela só marca; não altera a ordem)
+  setFavorite: async (id: number, isFavorite: boolean): Promise<World> => {
+    const response = await apiClient.patch<World>(`worlds/${id}/`, { is_favorite: isFavorite });
+    return response.data;
+  },
+
+  // Ordem personalizada: envia os ids dos SEUS mundos na ordem desejada
+  reorder: async (ids: number[]): Promise<void> => {
+    await apiClient.post('worlds/reorder/', { ids });
+  },
+
   getAllTags: async (): Promise<Tag[]> => {
     const response = await apiClient.get<Tag[]>('tags/');
     return response.data;
   }
 };
-
-
-

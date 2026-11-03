@@ -3,22 +3,32 @@
  * - ProtectedRoute: deixa passar quem tem token OU entrou como convidado;
  *   quem não tem nenhum dos dois vai para /login.
  * - Rota pública (Login) e rotas dentro do MainLayout (Home, WorldDetail).
- * - /dev/ui: página de estilo, registrada só em desenvolvimento.
+ * - /dev/ui: página de estilo, só em desenvolvimento e só se o arquivo existir
+ *   (hoje DevUI.tsx está no .gitignore). O import.meta.glob não quebra o build
+ *   quando o arquivo está ausente, ao contrário de um import direto.
  * - Toaster: notificações globais.
  *
  * Função do arquivo: Orquestrar a navegação e o acesso no frontend.
  * No modo convidado a escrita é bloqueada pelo backend (somente leitura).
  */
 
-import type { ReactNode } from 'react';
+import { lazy, Suspense } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { authService } from './api/auth';
 import Login from './pages/Login';
 import Home from './pages/Home'; // Dashboard principal
 import MainLayout from './components/layout/MainLayout';
 import WorldDetail from './pages/WorldDetail';
-import DevUI from './pages/DevUI';
 import { Toaster } from './components/ui';
+
+// Página de estilo (opcional, só em dev)
+const devPages = import.meta.glob('./pages/DevUI.tsx');
+const loadDevUI = devPages['./pages/DevUI.tsx'];
+const DevUI =
+  import.meta.env.DEV && loadDevUI
+    ? lazy(loadDevUI as () => Promise<{ default: ComponentType }>)
+    : null;
 
 // Guarda de Rota
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -46,7 +56,16 @@ export default function App() {
           <Route index element={<Home />} />
 
           <Route path="world/:id" element={<WorldDetail />} />
-          {import.meta.env.DEV && <Route path="dev/ui" element={<DevUI />} />}
+          {DevUI && (
+            <Route
+              path="dev/ui"
+              element={
+                <Suspense fallback={null}>
+                  <DevUI />
+                </Suspense>
+              }
+            />
+          )}
           {/* Futuras rotas entram aqui sem precisar importar a Sidebar nelas */}
           {/* <Route path="notebook" element={<Notebook />} /> */}
         </Route>

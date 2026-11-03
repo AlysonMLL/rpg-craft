@@ -25,8 +25,15 @@ class World(models.Model):
     synopsis = models.TextField()
     introduction_markdown = models.TextField(blank=True, null=True)
     is_demo = models.BooleanField(default=False)
+    # Favorito: só marca (não altera a ordem); a Home tem o filtro "Favoritos"
+    is_favorite = models.BooleanField(default=False)
+    # Ordem da opção "Personalizada" (arrastar e soltar)
     display_order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    # Última edição do próprio mundo
+    updated_at = models.DateTimeField(auto_now=True)
+    # Última atividade em qualquer item do mundo (será alimentada pelo log de atividade)
+    last_activity_at = models.DateTimeField(blank=True, null=True)
     
     # Aqui entra a mágica: O Django cria a tabela 'world_tags' no banco automaticamente
     tags = models.ManyToManyField(Tag, related_name='worlds', blank=True)
