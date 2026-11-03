@@ -49,8 +49,8 @@ export function Input({
           className={cn(
             fieldBase,
             error ? fieldBad : fieldOk,
-            leftIcon && 'pl-10',
-            rightSlot && 'pr-11',
+            Boolean(leftIcon) && 'pl-10',
+            Boolean(rightSlot) && 'pr-11',
             className,
           )}
           {...rest}

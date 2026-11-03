@@ -26,6 +26,7 @@
   /* Brilho neon */
   --shadow-neon: 0 0 15px rgb(220 227 5 / 0.3);
   --shadow-neon-soft: 0 0 10px rgb(220 227 5 / 0.1);
+  --shadow-lift: 0 14px 30px -10px rgb(0 0 0 / 0.65), 0 0 22px rgb(220 227 5 / 0.07);
 
   /* Animações (as classes animate-in/fade-in/zoom-in-95 usadas hoje
      precisam do plugin tailwindcss-animate e não fazem nada sem ele) */
@@ -69,4 +70,65 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Brilho metálico nos cards clicáveis (classe usada pelo Card interactive).
+   Um fio de luz fixo no topo + uma faixa diagonal que cruza o card uma vez no hover.
+   O reflexo só anima transform (barato) e só existe em dispositivos com hover. */
+.card-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.card-shine::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.14), transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+.card-shine::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgb(255 255 255 / 0.06) 47%,
+    rgb(255 255 255 / 0.12) 50%,
+    rgb(255 255 255 / 0.06) 53%,
+    transparent 62%
+  );
+  transform: translateX(-120%);
+  transition: transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  pointer-events: none;
+  z-index: 2;
+}
+@media (hover: hover) {
+  .card-shine:hover::after {
+    transform: translateX(120%);
+  }
+}
+@media (hover: hover) and (prefers-reduced-motion: reduce) {
+  .card-shine::after {
+    transition-duration: 1000ms !important;
+  }
+}
+
+/* Fundo pontilhado (PageBackground): pontos neutros nas bordas (miolo apagado) e
+   acento amarelo no canto inferior direito. Para ajustar a intensidade do amarelo,
+   mexa no alfa do ponto (0.55) ou no início da máscara (0.28). */
+.dots-neutral {
+  background-image: radial-gradient(circle, rgb(255 255 255 / 0.07) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, transparent 35%, #000 100%);
+  mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, transparent 35%, #000 100%);
+}
+.dots-accent {
+  background-image: radial-gradient(circle, rgb(220 227 5 / 0.55) 1.2px, transparent 1.8px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 55% 60% at 100% 100%, rgb(0 0 0 / 0.28) 0%, transparent 72%);
+  mask-image: radial-gradient(ellipse 55% 60% at 100% 100%, rgb(0 0 0 / 0.28) 0%, transparent 72%);
 }

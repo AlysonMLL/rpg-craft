@@ -1,8 +1,8 @@
 /**
  * O que há aqui:
  * - Componente MainLayout: Estrutura base de envoltório para a área logada ou de convidado.
- * - Renderiza a Sidebar na esquerda e, na direita, o aviso de convidado (se for o caso)
- *   acima da área de conteúdo (Outlet).
+ * - Renderiza o fundo decorativo, a Sidebar na esquerda e, na direita, o aviso de convidado
+ *   (se for o caso) acima da área de conteúdo (Outlet).
  *
  * Função do arquivo: Servir como o esqueleto visual das rotas internas.
  * Evita a repetição de código, garantindo que a Sidebar seja carregada apenas uma vez
@@ -12,13 +12,18 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import GuestBanner from './GuestBanner';
+import PageBackground from './PageBackground';
 import { authService } from '../../api/auth';
 
 export default function MainLayout() {
   const isGuest = authService.isGuest();
 
   return (
-    <div className="flex min-h-screen bg-rpg-bg text-gray-200 font-sans selection:bg-rpg-primary selection:text-black">
+    // isolate: cria o contexto de empilhamento para o fundo (-z-10) ficar atrás do conteúdo
+    // e acima da cor de fundo deste contêiner
+    <div className="isolate flex min-h-screen bg-rpg-bg text-gray-200 font-sans selection:bg-rpg-primary selection:text-black">
+      <PageBackground />
+
       {/* Navegação Lateral Fixa */}
       <Sidebar />
 

@@ -1,7 +1,11 @@
 /**
  * Superfície padrão (cards de mundo, widgets, módulos).
- * interactive: borda e brilho no hover. Se o card inteiro é clicável,
- * prefira renderizar um <button> ou <Link> dentro dele para ter foco por teclado.
+ * interactive: card clicável com elevação de 4px, sombra e borda destacada no hover,
+ * mais o brilho metálico (classe card-shine, em index.css). Em telas de toque e com
+ * "reduzir movimento" o brilho e a elevação não animam.
+ * Se o card inteiro é clicável, use um link "esticado" no título
+ * (after:absolute after:inset-0) para ter foco por teclado.
+ * Cards estáticos (widgets) e compactos (linhas de lista) não usam interactive.
  */
 import type { ComponentProps } from 'react';
 import { cn } from '../../lib/cn';
@@ -18,7 +22,7 @@ export function Card({ interactive = false, padded = true, className, ...rest }:
         'rounded-xl border border-gray-800 bg-rpg-card',
         padded && 'p-5',
         interactive &&
-          'cursor-pointer transition-colors hover:border-rpg-primary/50 hover:shadow-neon-soft',
+          'card-shine cursor-pointer transition-[transform,box-shadow,border-color] duration-200 hover:border-rpg-primary/50 hover:shadow-lift hover:-translate-y-1',
         className,
       )}
       {...rest}

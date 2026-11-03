@@ -16,9 +16,6 @@ import {
   Search,
   Plus,
   Bell,
-  Clock,
-  Users,
-  MapPin,
   Book,
   CheckSquare,
   Square,
@@ -26,8 +23,8 @@ import {
 } from 'lucide-react';
 import { worldService, type World } from '../api/worlds';
 import CreateWorldModal from '../components/world/CreateWorldModal';
+import WorldsSection from '../components/world/WorldsSection';
 import NoteModal, { type NoteData } from '../components/notebook/NoteModal';
-import { useNavigate } from 'react-router-dom';
 import { authService } from '../api/auth';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { Button } from '../components/ui';
@@ -35,7 +32,6 @@ import { Button } from '../components/ui';
 export default function Home() {
   const [worlds, setWorlds] = useState<World[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
   // Modo convidado: somente leitura (o backend também bloqueia escrita)
   const isGuest = authService.isGuest();
   const user = useCurrentUser();
@@ -114,7 +110,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-rpg-bg text-gray-200 p-8 flex flex-col gap-8">
+    <div className="min-h-screen text-gray-200 p-8 flex flex-col gap-8">
       {/* 1. TOPO: Header e Ações */}
       <header className="flex items-center justify-between">
         <div className="relative w-full max-w-xl">
@@ -165,104 +161,16 @@ export default function Home() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
         {/* COLUNA ESQUERDA: Mundos (Ocupa 2/3 da tela em monitores grandes) */}
         <div className="xl:col-span-2 space-y-8">
-          {/* Seção: Seus RPGs */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <Users size={18} className="text-rpg-secondary" />
-                {isGuest ? 'Mundos de exemplo' : 'Seus RPGs'}{' '}
-                <span className="text-gray-500 text-sm font-normal">
-                  ({worlds.length})
-                </span>
-              </h2>
-            </div>
-
-            {isLoading ? (
-              <div className="text-gray-400 animate-pulse">
-                Invocando dados do universo...
-              </div>
-            ) : worlds.length === 0 ? (
-              <div className="p-8 border border-dashed border-gray-700 rounded-xl text-center text-gray-500">
-                Você ainda não criou nenhum mundo. Clique em "Novo RPG" para
-                começar.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {worlds.map((world) => (
-                  /* Card do Mundo */
-                  <div
-                    key={world.id}
-                    onClick={() => navigate(`/world/${world.id}`)}
-                    className="bg-rpg-card border border-gray-800/80 rounded-xl overflow-hidden hover:border-rpg-primary/50 hover:shadow-[0_0_20px_rgba(220,227,5,0.05)] transition-all cursor-pointer group flex flex-col h-full"
-                  >
-                    {/* Imagem de Capa (Placeholder escuro se não houver) */}
-                    <div className="h-40 bg-gray-900 relative overflow-hidden">
-                      {world.cover_image ? (
-                        <img
-                          src={world.cover_image}
-                          alt={world.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-700 bg-linear-to-br from-gray-800 to-gray-900">
-                          <MapPin size={40} className="opacity-30" />
-                        </div>
-                      )}
-                      {/* Flag de Demo */}
-                      {world.is_demo && (
-                        <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-rpg-primary text-[10px] font-bold px-2 py-1 rounded uppercase border border-rpg-primary/30">
-                          Público
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Informações do Card */}
-                    <div className="p-5 flex-1 flex flex-col justify-between">
-                      <div>
-                        <h3 className="text-lg font-bold text-white mb-2">
-                          {world.name}
-                        </h3>
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {world.tags.map((tag) => (
-                            <span
-                              key={tag.id}
-                              className="text-xs font-medium text-rpg-secondary bg-rpg-secondary/10 px-2 py-0.5 rounded border border-rpg-secondary/20"
-                            >
-                              {tag.name}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs text-gray-500 pt-4 border-t border-gray-800/60 mt-auto">
-                        <div className="flex items-center gap-3">
-                          {/* Placeholder para contadores futuros */}
-                          <span
-                            className="flex items-center gap-1"
-                            title="Personagens"
-                          >
-                            <Users size={12} /> --
-                          </span>
-                          <span
-                            className="flex items-center gap-1"
-                            title="Locais"
-                          >
-                            <MapPin size={12} /> --
-                          </span>
-                        </div>
-                        <span className="flex items-center gap-1">
-                          <Clock size={12} />{' '}
-                          {new Date(world.created_at).toLocaleDateString(
-                            'pt-BR',
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+          {/* Seção: Seus RPGs (ordenação, filtros, arrastar e favoritos) */}
+          <WorldsSection
+            title={isGuest ? 'Mundos de exemplo' : 'Seus RPGs'}
+            worlds={worlds}
+            onWorldsChange={setWorlds}
+            isLoading={isLoading}
+            isGuest={isGuest}
+            limit={6}
+            onCreate={isGuest ? undefined : () => setIsWorldModalOpen(true)}
+          />
         </div>
 
         {/* COLUNA DIREITA: Widgets Interativos */}
@@ -416,5 +324,3 @@ export default function Home() {
     </div>
   );
 }
-
-

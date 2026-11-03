@@ -20,6 +20,7 @@ import Login from './pages/Login';
 import Home from './pages/Home'; // Dashboard principal
 import MainLayout from './components/layout/MainLayout';
 import WorldDetail from './pages/WorldDetail';
+import Worlds from './pages/Worlds';
 import { Toaster } from './components/ui';
 
 // Página de estilo (opcional, só em dev)
@@ -56,6 +57,7 @@ export default function App() {
           <Route index element={<Home />} />
 
           <Route path="world/:id" element={<WorldDetail />} />
+          <Route path="mundos" element={<Worlds />} />
           {DevUI && (
             <Route
               path="dev/ui"

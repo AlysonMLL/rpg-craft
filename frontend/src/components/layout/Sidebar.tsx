@@ -90,7 +90,7 @@ export default function Sidebar() {
           <NavLink
             to="/"
             className={({ isActive }) =>
-              getLinkClass({ isActive: isActive || pathname.startsWith('/world') })
+              getLinkClass({ isActive: isActive || pathname.startsWith('/world') || pathname.startsWith('/mundos') })
             }
             title="Início"
           >
