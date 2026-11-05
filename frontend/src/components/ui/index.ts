@@ -1,5 +1,6 @@
 export { Button } from './Button';
 export { Input, Textarea } from './Input';
+export { InlineText } from './InlineText';
 export { Select } from './Select';
 export { Checkbox } from './Checkbox';
 export { Toggle } from './Toggle';

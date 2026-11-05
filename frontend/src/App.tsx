@@ -21,6 +21,7 @@ import Home from './pages/Home'; // Dashboard principal
 import MainLayout from './components/layout/MainLayout';
 import WorldDetail from './pages/WorldDetail';
 import Worlds from './pages/Worlds';
+import Notebook from './pages/Notebook';
 import { Toaster } from './components/ui';
 
 // Página de estilo (opcional, só em dev)
@@ -58,6 +59,7 @@ export default function App() {
 
           <Route path="world/:id" element={<WorldDetail />} />
           <Route path="mundos" element={<Worlds />} />
+          <Route path="notebook" element={<Notebook />} />
           {DevUI && (
             <Route
               path="dev/ui"
@@ -69,7 +71,6 @@ export default function App() {
             />
           )}
           {/* Futuras rotas entram aqui sem precisar importar a Sidebar nelas */}
-          {/* <Route path="notebook" element={<Notebook />} /> */}
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

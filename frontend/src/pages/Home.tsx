@@ -1,33 +1,25 @@
 /**
  * O que há aqui:
- * - Estado para armazenar os mundos (worlds), carregamento (isLoading) e pesquisa.
- * - Hook useEffect que dispara a busca no Django assim que a tela abre.
- * - Header superior com input de busca e botão de Novo RPG (Neon).
- * - Grid responsivo de "Seus RPGs", mapeando os dados reais do banco.
- * - Painel lateral de "Notas Rápidas" e "Atividade Recente" (UI estática por enquanto).
+ * - Estado dos mundos (worlds) e carregamento; useEffect busca no Django ao abrir a tela.
+ * - Header superior com busca (visual por enquanto) e botão de Novo RPG.
+ * - "Seus RPGs" (WorldsSection): ordenação, filtros, arrastar e favoritos.
+ * - Coluna direita: NotesWidget e TodosWidget (dados reais do backend) e "Atividade Recente"
+ *   (UI estática até existir o log de atividade).
  *
- * Função do arquivo: Ser o centro de comando do usuário logado.
- * Consolida todas as instâncias de mundos criadas e oferece atalhos de produtividade,
- * replicando fielmente a identidade cyberpunk/dark-mode aprovada no design system.
+ * Função do arquivo: Ser o centro de comando do usuário logado ou convidado.
+ * Consolida os mundos e oferece atalhos de produtividade; no modo convidado tudo é somente leitura.
  */
 
 import { useState, useEffect } from 'react';
-import {
-  Search,
-  Plus,
-  Bell,
-  Book,
-  CheckSquare,
-  Square,
-  Trash2,
-} from 'lucide-react';
+import { Search, Plus, Bell } from 'lucide-react';
 import { worldService, type World } from '../api/worlds';
 import CreateWorldModal from '../components/world/CreateWorldModal';
 import WorldsSection from '../components/world/WorldsSection';
-import NoteModal, { type NoteData } from '../components/notebook/NoteModal';
+import NotesWidget from '../components/notebook/NotesWidget';
+import TodosWidget from '../components/notebook/TodosWidget';
 import { authService } from '../api/auth';
 import { useCurrentUser } from '../hooks/useCurrentUser';
-import { Button } from '../components/ui';
+import { Button, Card } from '../components/ui';
 
 export default function Home() {
   const [worlds, setWorlds] = useState<World[]>([]);
@@ -36,24 +28,7 @@ export default function Home() {
   const isGuest = authService.isGuest();
   const user = useCurrentUser();
 
-  // Controles de Modais
   const [isWorldModalOpen, setIsWorldModalOpen] = useState(false);
-  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
-  const [currentNote, setCurrentNote] = useState<NoteData | null>(null);
-
-  const [todos, setTodos] = useState([
-    { id: 1, text: 'Escrever backstory da Lyra', isDone: true },
-    { id: 2, text: 'Mapear região sul de Oakhaven', isDone: false },
-  ]);
-  const [newTodo, setNewTodo] = useState('');
-
-  const [notes, setNotes] = useState<NoteData[]>([
-    {
-      id: 1,
-      title: 'Lore da Seita dos Cinco Pilares',
-      content: 'A seita se move pelas sombras, atuando...',
-    },
-  ]);
 
   const fetchWorlds = async () => {
     setIsLoading(true);
@@ -71,57 +46,21 @@ export default function Home() {
     fetchWorlds();
   }, []);
 
-  // Funções de TO-DO
-  const toggleTodo = (id: number) => {
-    if (isGuest) return;
-    setTodos(todos.map((t) => (t.id === id ? { ...t, isDone: !t.isDone } : t)));
-  };
-  const deleteTodo = (id: number) => {
-    if (isGuest) return;
-    setTodos(todos.filter((t) => t.id !== id));
-  };
-  const addTodo = (e: React.KeyboardEvent) => {
-    if (isGuest) return;
-    if (e.key === 'Enter' && newTodo.trim()) {
-      setTodos([...todos, { id: Date.now(), text: newTodo, isDone: false }]);
-      setNewTodo('');
-    }
-  };
-
-  // Funções de NOTAS
-  const deleteNote = (e: React.MouseEvent, id: number) => {
-    e.stopPropagation(); // Evita que clicar na lixeira abra o modal
-    if (isGuest) return;
-    setNotes(notes.filter((n) => n.id !== id));
-  };
-  const handleSaveNote = (note: NoteData) => {
-    if (isGuest) return;
-    if (note.id) {
-      setNotes(notes.map((n) => (n.id === note.id ? note : n)));
-    } else {
-      setNotes([{ ...note, id: Date.now() }, ...notes]);
-    }
-    setIsNoteModalOpen(false);
-  };
-  const openNewNote = () => {
-    if (isGuest) return;
-    setCurrentNote(null); // Passar null sinaliza que é uma nota nova
-    setIsNoteModalOpen(true);
-  };
-
   return (
     <div className="min-h-screen text-gray-200 p-8 flex flex-col gap-8">
       {/* 1. TOPO: Header e Ações */}
       <header className="flex items-center justify-between">
         <div className="relative w-full max-w-xl">
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-rpg-subtle"
             size={20}
+            aria-hidden="true"
           />
           <input
             type="text"
+            aria-label="Buscar"
             placeholder="Buscar personagens, locais, eventos..."
-            className="w-full bg-rpg-card border border-gray-800 rounded-full py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:border-rpg-primary transition-colors"
+            className="w-full bg-rpg-card border border-gray-800 rounded-full py-2.5 pl-10 pr-4 text-sm placeholder:text-rpg-subtle focus:outline-none focus:border-rpg-primary transition-colors"
           />
         </div>
 
@@ -135,7 +74,11 @@ export default function Home() {
           >
             Novo RPG
           </Button>
-          <button className="p-2.5 bg-rpg-card border border-gray-800 rounded-lg hover:border-gray-600 transition-colors text-gray-400">
+          <button
+            type="button"
+            aria-label="Notificações"
+            className="p-2.5 bg-rpg-card border border-gray-800 rounded-lg hover:border-gray-600 transition-colors text-gray-400"
+          >
             <Bell size={20} />
           </button>
           {/* Avatar: inicial do usuário (V de visitante no modo convidado) */}
@@ -161,7 +104,6 @@ export default function Home() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
         {/* COLUNA ESQUERDA: Mundos (Ocupa 2/3 da tela em monitores grandes) */}
         <div className="xl:col-span-2 space-y-8">
-          {/* Seção: Seus RPGs (ordenação, filtros, arrastar e favoritos) */}
           <WorldsSection
             title={isGuest ? 'Mundos de exemplo' : 'Seus RPGs'}
             worlds={worlds}
@@ -169,157 +111,41 @@ export default function Home() {
             isLoading={isLoading}
             isGuest={isGuest}
             limit={6}
-            onCreate={isGuest ? undefined : () => setIsWorldModalOpen(true)}
           />
         </div>
 
-        {/* COLUNA DIREITA: Widgets Interativos */}
+        {/* COLUNA DIREITA: Widgets */}
         <div className="space-y-6">
-          {/* 1. Widget de NOTAS RÁPIDAS */}
-          <div className="bg-rpg-card border border-gray-800 rounded-xl p-5 shadow-sm flex flex-col max-h-80">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-bold flex items-center gap-2">
-                <Book size={16} className="text-rpg-primary" />
-                Notas Rápidas
-              </h3>
-              {!isGuest && (
-                <button
-                  onClick={openNewNote}
-                  className="text-xs text-rpg-primary hover:text-white transition-colors font-bold"
-                >
-                  + Nova
-                </button>
-              )}
-            </div>
+          <NotesWidget isGuest={isGuest} />
+          <TodosWidget isGuest={isGuest} />
 
-            <div className="space-y-2 overflow-y-auto pr-1">
-              {notes.length === 0 ? (
-                <p className="text-sm text-gray-500 italic">
-                  Nenhuma anotação.
-                </p>
-              ) : (
-                notes.map((note) => (
-                  <div
-                    key={note.id}
-                    onClick={() => {
-                      setCurrentNote(note);
-                      setIsNoteModalOpen(true);
-                    }}
-                    className="flex items-center justify-between p-2.5 rounded-lg border border-gray-800/60 bg-rpg-bg hover:border-rpg-primary/50 cursor-pointer group transition-all"
-                  >
-                    <p className="text-sm font-medium text-gray-300 truncate pr-4">
-                      {note.title}
-                    </p>
-                    {!isGuest && (
-                      <button
-                        onClick={(e) => deleteNote(e, note.id!)}
-                        className="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1"
-                        title="Deletar Nota"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* 2. Widget de TO-DOS */}
-          <div className="bg-rpg-card border border-gray-800 rounded-xl p-5 shadow-sm">
-            <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-              <CheckSquare size={16} className="text-rpg-primary" /> Lista de
-              Tarefas
-            </h3>
-            <div className="space-y-2">
-              {todos.map((todo) => (
-                <div
-                  key={todo.id}
-                  className="flex items-center justify-between group p-1"
-                >
-                  <div
-                    onClick={() => toggleTodo(todo.id)}
-                    className={`flex items-center gap-3 flex-1 ${isGuest ? 'cursor-default' : 'cursor-pointer'}`}
-                  >
-                    {todo.isDone ? (
-                      <CheckSquare
-                        size={16}
-                        className="text-rpg-primary shrink-0"
-                      />
-                    ) : (
-                      <Square
-                        size={16}
-                        className="text-gray-500 group-hover:text-gray-400 shrink-0"
-                      />
-                    )}
-                    <span
-                      className={`text-sm transition-colors truncate ${todo.isDone ? 'text-gray-500 line-through' : 'text-gray-300'}`}
-                    >
-                      {todo.text}
-                    </span>
-                  </div>
-                  {!isGuest && (
-                    <button
-                      onClick={() => deleteTodo(todo.id)}
-                      className="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-            {!isGuest && (
-              <input
-                type="text"
-                value={newTodo}
-                onChange={(e) => setNewTodo(e.target.value)}
-                onKeyDown={addTodo}
-                placeholder="+ Adicionar tarefa (Enter)"
-                className="w-full bg-rpg-bg border border-gray-800 rounded px-3 py-2 text-sm text-white focus:border-rpg-primary focus:outline-none mt-3"
-              />
-            )}
-          </div>
-
-          {/* Widget de Atividade Recente */}
-        <div className="bg-rpg-card border border-gray-800 rounded-xl p-5 shadow-sm">
+          {/* Atividade Recente (estática até existir o log de atividade) */}
+          <Card>
             <h3 className="text-white font-bold mb-4">Atividade Recente</h3>
             <ul className="space-y-4 text-sm relative before:absolute before:inset-y-2 before:left-1.5 before:w-px before:bg-gray-800">
-            {[
+              {[
                 { text: 'Lyra Valerius atualizada', color: 'bg-rpg-secondary' },
                 { text: 'Novo local: Torre de Cristal', color: 'bg-rpg-primary' },
                 { text: 'Aethervania criado', color: 'bg-green-500' },
-            ].map((act, i) => (
-                <li key={i} className="pl-6 relative">
-                <span
+              ].map((act) => (
+                <li key={act.text} className="pl-6 relative">
+                  <span
                     className={`absolute left-0 top-1.5 w-3 h-3 rounded-full ${act.color} ring-4 ring-rpg-card`}
-                ></span>
-                <p className="text-gray-300">{act.text}</p>
-                <span className="text-[10px] text-gray-600">
-                    Há algumas horas
-                </span>
+                  ></span>
+                  <p className="text-gray-300">{act.text}</p>
+                  <span className="text-[10px] text-rpg-subtle">Há algumas horas</span>
                 </li>
-            ))}
+              ))}
             </ul>
-        </div>
+          </Card>
         </div>
       </div>
-
-      
 
       {/* Montagem dos Modais na raiz da tela */}
       <CreateWorldModal
         isOpen={isWorldModalOpen}
         onClose={() => setIsWorldModalOpen(false)}
         onSuccess={fetchWorlds}
-      />
-
-      <NoteModal
-        isOpen={isNoteModalOpen}
-        initialData={currentNote}
-        onClose={() => setIsNoteModalOpen(false)}
-        onSave={handleSaveNote}
-        readOnly={isGuest}
       />
     </div>
   );

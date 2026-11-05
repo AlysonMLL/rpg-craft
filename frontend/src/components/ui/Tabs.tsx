@@ -22,6 +22,8 @@ interface TabsProps {
   onChange: (value: string) => void;
   idPrefix?: string;
   ariaLabel?: string;
+  /** Linha cinza sob a barra (padrão). Desligue quando a barra já fica dentro de um contêiner com borda. */
+  bordered?: boolean;
   className?: string;
 }
 
@@ -31,6 +33,7 @@ export function Tabs({
   onChange,
   idPrefix = 'tabs',
   ariaLabel,
+  bordered = true,
   className,
 }: TabsProps) {
   const refs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -55,7 +58,7 @@ export function Tabs({
       role="tablist"
       aria-label={ariaLabel}
       onKeyDown={handleKeyDown}
-      className={cn('flex gap-6 overflow-x-auto border-b border-gray-800', className)}
+      className={cn('flex flex-wrap gap-x-6', bordered && 'border-b border-gray-800', className)}
     >
       {items.map((item) => {
         const active = item.value === value;

@@ -3,11 +3,12 @@
  * - leftIcon / rightSlot: ícone à esquerda e área à direita (ex: botão de
  *   mostrar senha) dentro do campo.
  * - error: mensagem de erro; marca o campo como inválido.
+ * - size: "md" (padrão) ou "sm" (compacto, para tabelas).
  */
 import { useId } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import { cn } from '../../lib/cn';
-import { fieldBad, fieldBase, fieldOk } from '../../lib/fieldStyles';
+import { fieldBad, fieldBase, fieldOk, fieldSizes, type FieldSize } from '../../lib/fieldStyles';
 import { FieldShell } from './FieldShell';
 
 interface InputProps extends Omit<ComponentProps<'input'>, 'size'> {
@@ -16,6 +17,7 @@ interface InputProps extends Omit<ComponentProps<'input'>, 'size'> {
   error?: string;
   leftIcon?: ReactNode;
   rightSlot?: ReactNode;
+  size?: FieldSize;
 }
 
 export function Input({
@@ -24,6 +26,7 @@ export function Input({
   error,
   leftIcon,
   rightSlot,
+  size = 'md',
   className,
   id,
   required,
@@ -48,6 +51,7 @@ export function Input({
           aria-describedby={describedBy}
           className={cn(
             fieldBase,
+            fieldSizes[size],
             error ? fieldBad : fieldOk,
             Boolean(leftIcon) && 'pl-10',
             Boolean(rightSlot) && 'pr-11',
@@ -83,7 +87,7 @@ export function Textarea({ label, hint, error, className, id, required, ...rest 
         required={required}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className={cn(fieldBase, 'resize-none', error ? fieldBad : fieldOk, className)}
+        className={cn(fieldBase, fieldSizes.md, 'resize-none', error ? fieldBad : fieldOk, className)}
         {...rest}
       />
     </FieldShell>

@@ -3,13 +3,14 @@
  * Escolha deliberada: o nativo é acessível, funciona bem no celular e, com
  * color-scheme escuro (index.css), a lista de opções também fica escura.
  * Passe as opções por `options` ou como <option> em children.
+ * size: "md" (padrão) ou "sm" (compacto, para tabelas).
  * Se um dia precisar de ícones ou cores dentro das opções, criar um Listbox à parte.
  */
 import { useId } from 'react';
 import type { ComponentProps } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '../../lib/cn';
-import { fieldBad, fieldBase, fieldOk } from '../../lib/fieldStyles';
+import { fieldBad, fieldBase, fieldOk, fieldSizes, type FieldSize } from '../../lib/fieldStyles';
 import { FieldShell } from './FieldShell';
 
 interface SelectOption {
@@ -22,6 +23,7 @@ interface SelectProps extends Omit<ComponentProps<'select'>, 'size'> {
   hint?: string;
   error?: string;
   options?: SelectOption[];
+  size?: FieldSize;
 }
 
 export function Select({
@@ -29,6 +31,7 @@ export function Select({
   hint,
   error,
   options,
+  size = 'md',
   className,
   id,
   required,
@@ -49,7 +52,9 @@ export function Select({
           aria-describedby={describedBy}
           className={cn(
             fieldBase,
-            'appearance-none pr-10',
+            fieldSizes[size],
+            'appearance-none',
+            size === 'sm' ? 'pr-8' : 'pr-10',
             error ? fieldBad : fieldOk,
             className,
           )}
@@ -63,9 +68,12 @@ export function Select({
           {children}
         </select>
         <ChevronDown
-          size={16}
+          size={size === 'sm' ? 14 : 16}
           aria-hidden="true"
-          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-rpg-subtle"
+          className={cn(
+            'pointer-events-none absolute top-1/2 -translate-y-1/2 text-rpg-subtle',
+            size === 'sm' ? 'right-2.5' : 'right-3',
+          )}
         />
       </div>
     </FieldShell>
