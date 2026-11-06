@@ -30,8 +30,9 @@ export default function MainLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         {isGuest && <GuestBanner />}
 
-        {/* Área Principal de Conteúdo - Ocupa o restante da tela */}
-        <main className="relative flex-1 overflow-y-auto">
+        {/* Área Principal de Conteúdo. Sem overflow aqui: ele quebraria o position: sticky
+            da barra de abas e do índice do mundo (a página inteira é que rola). */}
+        <main className="relative flex-1">
           {/* O Outlet é substituído pelo componente da página atual (ex: Home) */}
           <Outlet />
         </main>

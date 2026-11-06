@@ -19,7 +19,10 @@ import { authService } from './api/auth';
 import Login from './pages/Login';
 import Home from './pages/Home'; // Dashboard principal
 import MainLayout from './components/layout/MainLayout';
-import WorldDetail from './pages/WorldDetail';
+import { Map as MapIcon, PawPrint, Users } from 'lucide-react';
+import WorldLayout from './components/world/WorldLayout';
+import WorldOverview from './pages/WorldOverview';
+import WorldSectionPlaceholder from './pages/WorldSectionPlaceholder';
 import Worlds from './pages/Worlds';
 import Notebook from './pages/Notebook';
 import { Toaster } from './components/ui';
@@ -57,7 +60,40 @@ export default function App() {
           {/* O 'index' significa que a Home renderiza no path="/" */}
           <Route index element={<Home />} />
 
-          <Route path="world/:id" element={<WorldDetail />} />
+          {/* Espaço do mundo: layout compartilhado (hero + abas) com as páginas filhas */}
+          <Route path="world/:id" element={<WorldLayout />}>
+            <Route index element={<WorldOverview />} />
+            <Route
+              path="personagens"
+              element={
+                <WorldSectionPlaceholder
+                  title="Personagens"
+                  description="Fichas editáveis, relações e documentos dos personagens do mundo."
+                  Icon={Users}
+                />
+              }
+            />
+            <Route
+              path="mapas"
+              element={
+                <WorldSectionPlaceholder
+                  title="Mapas"
+                  description="Mapas interativos, locais e organizações do mundo."
+                  Icon={MapIcon}
+                />
+              }
+            />
+            <Route
+              path="racas-criaturas"
+              element={
+                <WorldSectionPlaceholder
+                  title="Raças e Criaturas"
+                  description="Os povos e os seres do mundo, com perigo, nível e onde são comuns."
+                  Icon={PawPrint}
+                />
+              }
+            />
+          </Route>
           <Route path="mundos" element={<Worlds />} />
           <Route path="notebook" element={<Notebook />} />
           {DevUI && (

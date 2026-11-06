@@ -13,7 +13,7 @@ import { formatRelative } from '../../lib/time';
 import { cn } from '../../lib/cn';
 import { Card, Drawer, Skeleton, toast } from '../ui';
 
-function ActivityCard({ activity }: { activity: Activity }) {
+function ActivityCard({ activity, hideWorld = false }: { activity: Activity; hideWorld?: boolean }) {
   const meta = TARGET_META[activity.target_type];
   const link = activityLink(activity);
 
@@ -35,7 +35,7 @@ function ActivityCard({ activity }: { activity: Activity }) {
           {verbLabel(activity)} · {formatRelative(activity.created_at)}
         </span>
         <span className="block truncate text-xs text-rpg-subtle">
-          {activity.target_type === 'world' ? meta.label : (activity.world_name ?? meta.label)}
+          {hideWorld || activity.target_type === 'world' ? meta.label : (activity.world_name ?? meta.label)}
         </span>
       </span>
     </>
@@ -65,7 +65,15 @@ function ActivityCard({ activity }: { activity: Activity }) {
   );
 }
 
-function ActivityDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+function ActivityDrawer({
+  open,
+  onClose,
+  worldId,
+}: {
+  open: boolean;
+  onClose: () => void;
+  worldId?: number;
+}) {
   const [items, setItems] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -73,11 +81,11 @@ function ActivityDrawer({ open, onClose }: { open: boolean; onClose: () => void 
     if (!open) return;
     setIsLoading(true);
     activityService
-      .list(50)
+      .list(50, worldId)
       .then(setItems)
       .catch(() => toast.error('Não foi possível carregar a atividade. Tente de novo.'))
       .finally(() => setIsLoading(false));
-  }, [open]);
+  }, [open, worldId]);
 
   return (
     <Drawer open={open} onClose={onClose} title="Atividade recente">
@@ -139,7 +147,22 @@ function ActivityDrawer({ open, onClose }: { open: boolean; onClose: () => void 
   );
 }
 
-export default function ActivityStrip() {
+interface ActivityStripProps {
+  /** Mostra só a atividade de um mundo (usado na Visão geral do mundo) */
+  worldId?: number;
+  title?: string;
+  /** Nível do título: h2 na Home, h3 dentro de uma seção */
+  headingAs?: 'h2' | 'h3';
+  /** Esconde o nome do mundo nos cards (redundante dentro do próprio mundo) */
+  hideWorld?: boolean;
+}
+
+export default function ActivityStrip({
+  worldId,
+  title = 'Atividade recente',
+  headingAs: Heading = 'h2',
+  hideWorld = false,
+}: ActivityStripProps) {
   const [items, setItems] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -148,11 +171,11 @@ export default function ActivityStrip() {
 
   useEffect(() => {
     activityService
-      .list(10)
+      .list(10, worldId)
       .then(setItems)
       .catch(() => toast.error('Não foi possível carregar a atividade recente.'))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [worldId]);
 
   useEffect(() => {
     const element = scroller.current;
@@ -170,12 +193,12 @@ export default function ActivityStrip() {
   };
 
   return (
-    <section aria-label="Atividade recente">
+    <section aria-label={title}>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-lg font-bold text-white">
+        <Heading className="flex items-center gap-2 text-lg font-bold text-white">
           <Clock size={18} className="text-rpg-primary" aria-hidden="true" />
-          Atividade recente
-        </h2>
+          {title}
+        </Heading>
         {overflowing && (
           <div className="flex gap-1">
             <button
@@ -218,7 +241,7 @@ export default function ActivityStrip() {
           )}
         >
           {items.map((activity) => (
-            <ActivityCard key={activity.id} activity={activity} />
+            <ActivityCard key={activity.id} activity={activity} hideWorld={hideWorld} />
           ))}
           <li className="shrink-0 snap-start">
             <button
@@ -233,7 +256,7 @@ export default function ActivityStrip() {
         </ul>
       )}
 
-      <ActivityDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <ActivityDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} worldId={worldId} />
     </section>
   );
 }
