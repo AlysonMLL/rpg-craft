@@ -19,6 +19,7 @@ class Activity(models.Model):
         WORLD = 'world', 'Mundo'
         NOTE = 'note', 'Nota'
         TODO = 'todo', 'Tarefa'
+        DOCUMENT = 'document', 'Documento'
         # Entram aqui conforme os apps existirem: character, map, location, event...
 
     owner = models.ForeignKey(

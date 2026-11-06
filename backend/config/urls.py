@@ -22,5 +22,6 @@ urlpatterns = [
     path('api/', include('worlds.urls')), # rota base para api
     path('api/', include('notebook.urls')), # notas e tarefas
     path('api/', include('activity.urls')), # log de atividade
+    path('api/', include('lore.urls')), # documentos .md dos mundos
     path('api/auth/', include('accounts.urls')), # rota base para autenticação
 ]
