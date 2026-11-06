@@ -4,8 +4,8 @@
  * - Editar salva sozinho (800ms depois de parar de digitar e ao trocar de nota) e mostra "Salvo agora".
  * - Fixar e excluir (com "Desfazer"). Modo convidado: só leitura.
  */
-import { useState } from 'react';
-import { Pin, PinOff, Plus, Search, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Maximize2, Minimize2, Pin, PinOff, Plus, Search, Trash2 } from 'lucide-react';
 import { noteService, type Note } from '../../api/notebook';
 import type { World } from '../../api/worlds';
 import { useAutosave, type SaveStatus } from '../../hooks/useAutosave';
@@ -104,17 +104,45 @@ interface NotesTabProps {
   onNotesChange: (notes: Note[]) => void;
   worlds: World[];
   isGuest: boolean;
+  /** Nota aberta ao entrar (?nota=ID) */
+  initialNoteId?: number | null;
 }
 
-export default function NotesTab({ notes, onNotesChange, worlds, isGuest }: NotesTabProps) {
+export default function NotesTab({
+  notes,
+  onNotesChange,
+  worlds,
+  isGuest,
+  initialNoteId = null,
+}: NotesTabProps) {
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<NoteSort>('pinned');
   const [worldFilter, setWorldFilter] = useState('all');
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(initialNoteId);
   const [mode, setMode] = useState<Mode>('ler');
+  const [fullscreen, setFullscreen] = useState(false);
 
   const ownedWorlds = worlds.filter((world) => world.is_owner);
   const selected = notes.find((note) => note.id === selectedId) ?? null;
+
+  // Tela cheia: Esc sai, a página atrás não rola e, sem nota selecionada, volta ao normal
+  useEffect(() => {
+    if (!fullscreen) return;
+    if (!selected) {
+      setFullscreen(false);
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setFullscreen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [fullscreen, selected]);
 
   const visible = notes
     .filter((note) => {
@@ -270,10 +298,17 @@ export default function NotesTab({ notes, onNotesChange, worlds, isGuest }: Note
         </ul>
       </div>
 
-      {/* Painel */}
+      {/* Painel (em tela cheia ocupa a janela inteira; o editor continua o mesmo) */}
       <section
-        aria-label="Anotação selecionada"
-        className="flex min-h-[24rem] min-w-0 flex-col rounded-xl border border-gray-800 bg-rpg-card"
+        aria-label={fullscreen ? 'Nota em tela cheia' : 'Anotação selecionada'}
+        role={fullscreen ? 'dialog' : undefined}
+        aria-modal={fullscreen ? true : undefined}
+        className={cn(
+          'flex min-w-0 flex-col',
+          fullscreen
+            ? 'fixed inset-0 z-50 bg-rpg-bg'
+            : 'min-h-[24rem] rounded-xl border border-gray-800 bg-rpg-card',
+        )}
       >
         {!selected ? (
           <div className="m-auto p-6">
@@ -288,58 +323,78 @@ export default function NotesTab({ notes, onNotesChange, worlds, isGuest }: Note
           </div>
         ) : (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-800 px-5 pt-1">
-              {isGuest ? (
-                <span className="py-3 text-sm font-medium text-white">Leitura</span>
-              ) : (
-                <Tabs
-                  idPrefix="note"
-                  ariaLabel="Modo da nota"
-                  items={MODE_ITEMS}
-                  value={mode}
-                  onChange={(value) => setMode(value as Mode)}
-                  bordered={false}
-                />
-              )}
-              {!isGuest && (
+            <div className="border-b border-gray-800">
+              <div
+                className={cn(
+                  'flex flex-wrap items-center justify-between gap-3 px-5 pt-1',
+                  fullscreen && 'mx-auto w-full max-w-4xl',
+                )}
+              >
+                {isGuest ? (
+                  <span className="py-3 text-sm font-medium text-white">Leitura</span>
+                ) : (
+                  <Tabs
+                    idPrefix="note"
+                    ariaLabel="Modo da nota"
+                    items={MODE_ITEMS}
+                    value={mode}
+                    onChange={(value) => setMode(value as Mode)}
+                    bordered={false}
+                  />
+                )}
                 <div className="flex items-center gap-1 py-2">
+                  {!isGuest && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => togglePin(selected)}
+                        leftIcon={selected.is_pinned ? <PinOff size={14} /> : <Pin size={14} />}
+                      >
+                        {selected.is_pinned ? 'Desafixar' : 'Fixar'}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteNote(selected)}
+                        leftIcon={<Trash2 size={14} />}
+                      >
+                        Excluir
+                      </Button>
+                    </>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => togglePin(selected)}
-                    leftIcon={selected.is_pinned ? <PinOff size={14} /> : <Pin size={14} />}
+                    aria-pressed={fullscreen}
+                    onClick={() => setFullscreen((value) => !value)}
+                    leftIcon={fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
                   >
-                    {selected.is_pinned ? 'Desafixar' : 'Fixar'}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteNote(selected)}
-                    leftIcon={<Trash2 size={14} />}
-                  >
-                    Excluir
+                    {fullscreen ? 'Sair da tela cheia' : 'Tela cheia'}
                   </Button>
                 </div>
-              )}
+              </div>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto p-5">
-              <TabPanel idPrefix="note" value="ler" current={isGuest ? 'ler' : mode}>
-                <h2 className="text-2xl font-bold text-white">{selected.title}</h2>
-                <div className="mb-4 mt-2 flex flex-wrap items-center gap-2 text-xs text-rpg-subtle">
-                  {selected.world_name && <Badge variant="neutral">{selected.world_name}</Badge>}
-                  <span>Atualizada {formatRelative(selected.updated_at)}</span>
-                </div>
-                {selected.content ? (
-                  <MarkdownView content={selected.content} />
-                ) : (
-                  <p className="italic text-rpg-subtle">Esta anotação está vazia…</p>
-                )}
-              </TabPanel>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <div className={cn('h-full p-5', fullscreen && 'mx-auto max-w-4xl')}>
+                <TabPanel idPrefix="note" value="ler" current={isGuest ? 'ler' : mode}>
+                  <h2 className="text-2xl font-bold text-white">{selected.title}</h2>
+                  <div className="mb-4 mt-2 flex flex-wrap items-center gap-2 text-xs text-rpg-subtle">
+                    {selected.world_name && <Badge variant="neutral">{selected.world_name}</Badge>}
+                    <span>Atualizada {formatRelative(selected.updated_at)}</span>
+                  </div>
+                  {selected.content ? (
+                    <MarkdownView content={selected.content} />
+                  ) : (
+                    <p className="italic text-rpg-subtle">Esta anotação está vazia…</p>
+                  )}
+                </TabPanel>
 
-              <TabPanel idPrefix="note" value="editar" current={isGuest ? 'ler' : mode} className="h-full">
-                <NoteEditor key={selected.id} note={selected} worlds={ownedWorlds} onUpdated={replaceNote} />
-              </TabPanel>
+                <TabPanel idPrefix="note" value="editar" current={isGuest ? 'ler' : mode} className="h-full">
+                  <NoteEditor key={selected.id} note={selected} worlds={ownedWorlds} onUpdated={replaceNote} />
+                </TabPanel>
+              </div>
             </div>
           </>
         )}

@@ -16,6 +16,9 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from activity.models import Activity
+from activity.services import log_activity
+
 from .models import Note, Todo
 from .serializers import NoteSerializer, TodoSerializer
 
@@ -38,6 +41,31 @@ class NoteViewSet(_OwnedQuerysetMixin, viewsets.ModelViewSet):
     queryset = Note.objects.select_related('world')
     serializer_class = NoteSerializer
 
+    def _log(self, verb, note):
+        log_activity(
+            owner=note.owner, verb=verb, target_type=Activity.Target.NOTE,
+            target_id=note.id, label=note.title, world=note.world,
+        )
+
+    def perform_create(self, serializer):
+        note = serializer.save(owner=self.request.user)
+        self._log(Activity.Verb.CREATED, note)
+
+    def perform_update(self, serializer):
+        note = serializer.save()
+        # Só fixar/desafixar não conta como atividade
+        if set(serializer.validated_data) - {'is_pinned'}:
+            self._log(Activity.Verb.UPDATED, note)
+
+    def perform_destroy(self, instance):
+        # Guarda os dados antes de excluir (o id some depois do delete)
+        owner, note_id, title, world = instance.owner, instance.id, instance.title, instance.world
+        instance.delete()
+        log_activity(
+            owner=owner, verb=Activity.Verb.DELETED, target_type=Activity.Target.NOTE,
+            target_id=note_id, label=title, world=world,
+        )
+
 
 def _pending_ordered(owner):
     return Todo.objects.filter(owner=owner, is_done=False).order_by(
@@ -57,14 +85,21 @@ class TodoViewSet(_OwnedQuerysetMixin, viewsets.ModelViewSet):
     queryset = Todo.objects.select_related('world')
     serializer_class = TodoSerializer
 
+    def _log(self, verb, todo):
+        log_activity(
+            owner=todo.owner, verb=verb, target_type=Activity.Target.TODO,
+            target_id=todo.id, label=todo.text, world=todo.world,
+        )
+
     def perform_create(self, serializer):
         owner = self.request.user
         if serializer.validated_data.get('is_done'):
-            serializer.save(owner=owner, position=None, completed_at=timezone.now())
+            todo = serializer.save(owner=owner, position=None, completed_at=timezone.now())
         else:
             end = Todo.objects.filter(owner=owner, is_done=False).count() + 1
-            serializer.save(owner=owner, position=end)
+            todo = serializer.save(owner=owner, position=end)
         renumber_pending(owner)
+        self._log(Activity.Verb.CREATED, todo)
 
     def perform_update(self, serializer):
         was_done = serializer.instance.is_done
@@ -76,11 +111,16 @@ class TodoViewSet(_OwnedQuerysetMixin, viewsets.ModelViewSet):
                 todo.position, todo.completed_at = 10**9, None  # vai para o fim
             todo.save(update_fields=['position', 'completed_at'])
         renumber_pending(todo.owner)
+        self._log(Activity.Verb.UPDATED, todo)
 
     def perform_destroy(self, instance):
-        owner = instance.owner
+        owner, todo_id, text, world = instance.owner, instance.id, instance.text, instance.world
         instance.delete()
         renumber_pending(owner)
+        log_activity(
+            owner=owner, verb=Activity.Verb.DELETED, target_type=Activity.Target.TODO,
+            target_id=todo_id, label=text, world=world,
+        )
 
     @action(detail=True, methods=['post'], url_path='move')
     def move(self, request, pk=None):

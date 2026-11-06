@@ -3,8 +3,8 @@
  * - Estado dos mundos (worlds) e carregamento; useEffect busca no Django ao abrir a tela.
  * - Header superior com busca (visual por enquanto) e botão de Novo RPG.
  * - "Seus RPGs" (WorldsSection): ordenação, filtros, arrastar e favoritos.
- * - Coluna direita: NotesWidget e TodosWidget (dados reais do backend) e "Atividade Recente"
- *   (UI estática até existir o log de atividade).
+ * - Faixa "Atividade recente" (ActivityStrip) abaixo da saudação, com links para os itens.
+ * - Coluna direita: NotesWidget e TodosWidget (dados reais do backend).
  *
  * Função do arquivo: Ser o centro de comando do usuário logado ou convidado.
  * Consolida os mundos e oferece atalhos de produtividade; no modo convidado tudo é somente leitura.
@@ -19,7 +19,8 @@ import NotesWidget from '../components/notebook/NotesWidget';
 import TodosWidget from '../components/notebook/TodosWidget';
 import { authService } from '../api/auth';
 import { useCurrentUser } from '../hooks/useCurrentUser';
-import { Button, Card } from '../components/ui';
+import ActivityStrip from '../components/activity/ActivityStrip';
+import { Button } from '../components/ui';
 
 export default function Home() {
   const [worlds, setWorlds] = useState<World[]>([]);
@@ -100,6 +101,9 @@ export default function Home() {
         </p>
       </div>
 
+      {/* Atividade recente: faixa horizontal com links para os itens */}
+      <ActivityStrip />
+
       {/* 2. CONTEÚDO PRINCIPAL: Divisão em 2 colunas */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
         {/* COLUNA ESQUERDA: Mundos (Ocupa 2/3 da tela em monitores grandes) */}
@@ -119,25 +123,6 @@ export default function Home() {
           <NotesWidget isGuest={isGuest} />
           <TodosWidget isGuest={isGuest} />
 
-          {/* Atividade Recente (estática até existir o log de atividade) */}
-          <Card>
-            <h3 className="text-white font-bold mb-4">Atividade Recente</h3>
-            <ul className="space-y-4 text-sm relative before:absolute before:inset-y-2 before:left-1.5 before:w-px before:bg-gray-800">
-              {[
-                { text: 'Lyra Valerius atualizada', color: 'bg-rpg-secondary' },
-                { text: 'Novo local: Torre de Cristal', color: 'bg-rpg-primary' },
-                { text: 'Aethervania criado', color: 'bg-green-500' },
-              ].map((act) => (
-                <li key={act.text} className="pl-6 relative">
-                  <span
-                    className={`absolute left-0 top-1.5 w-3 h-3 rounded-full ${act.color} ring-4 ring-rpg-card`}
-                  ></span>
-                  <p className="text-gray-300">{act.text}</p>
-                  <span className="text-[10px] text-rpg-subtle">Há algumas horas</span>
-                </li>
-              ))}
-            </ul>
-          </Card>
         </div>
       </div>
 

@@ -6,6 +6,7 @@ O que há aqui:
   usuário logado vê os próprios mundos mais os 'is_demo'.
 - WorldViewSet.perform_create(): Injeta automaticamente o usuário logado como 'owner'
   do mundo no momento de um POST, dispensando o envio desse dado no JSON da requisição.
+- perform_create/update/destroy também registram a atividade (log de "Atividade recente").
 - WorldViewSet.reorder(): POST /worlds/reorder/ com {"ids": [3, 1, 2]} grava a ordem
   personalizada (arrastar e soltar) dos mundos do usuário numa única transação.
 
@@ -20,6 +21,9 @@ from django.db.models import Q
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from activity.models import Activity
+from activity.services import log_activity
 
 from .models import World, Tag
 from .permissions import IsOwnerOrReadOnly
@@ -51,7 +55,28 @@ class WorldViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         # Quando o frontend manda um POST para criar um RPG, o Django atrela o dono automaticamente
-        serializer.save(owner=self.request.user)
+        world = serializer.save(owner=self.request.user)
+        log_activity(
+            owner=world.owner, verb=Activity.Verb.CREATED, target_type=Activity.Target.WORLD,
+            target_id=world.id, label=world.name, world=world,
+        )
+
+    def perform_update(self, serializer):
+        world = serializer.save()
+        # Só favoritar/desfavoritar não conta como atividade
+        if set(serializer.validated_data) - {'is_favorite'}:
+            log_activity(
+                owner=world.owner, verb=Activity.Verb.UPDATED, target_type=Activity.Target.WORLD,
+                target_id=world.id, label=world.name, world=world,
+            )
+
+    def perform_destroy(self, instance):
+        owner, world_id, name = instance.owner, instance.id, instance.name
+        instance.delete()
+        log_activity(
+            owner=owner, verb=Activity.Verb.DELETED, target_type=Activity.Target.WORLD,
+            target_id=world_id, label=name, world=None,
+        )
 
     @action(detail=False, methods=['post'], url_path='reorder')
     def reorder(self, request):

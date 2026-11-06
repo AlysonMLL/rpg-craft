@@ -19,6 +19,8 @@ export default function Notebook() {
   const [params, setParams] = useSearchParams();
   const tab = params.get('aba') === 'tarefas' ? 'tarefas' : 'notas';
   const isGuest = authService.isGuest();
+  // ?nota=ID abre a nota direto (links da atividade recente)
+  const noteParam = Number(params.get('nota')) || null;
 
   const [notes, setNotes] = useState<Note[]>([]);
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -66,7 +68,13 @@ export default function Notebook() {
       ) : (
         <>
           <TabPanel idPrefix="notebook" value="notas" current={tab}>
-            <NotesTab notes={notes} onNotesChange={setNotes} worlds={worlds} isGuest={isGuest} />
+            <NotesTab
+              notes={notes}
+              onNotesChange={setNotes}
+              worlds={worlds}
+              isGuest={isGuest}
+              initialNoteId={noteParam}
+            />
           </TabPanel>
           <TabPanel idPrefix="notebook" value="tarefas" current={tab}>
             <TodosTab todos={todos} onTodosChange={setTodos} worlds={worlds} isGuest={isGuest} />
