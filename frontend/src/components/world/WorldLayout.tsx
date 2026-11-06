@@ -8,7 +8,6 @@
  *
  * Função do arquivo: Dar a todas as telas de um mundo a mesma moldura e navegação.
  */
-
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft, LayoutGrid, Map as MapIcon, PawPrint, Users } from 'lucide-react';
@@ -60,7 +59,7 @@ export default function WorldLayout() {
   const base = `/world/${world.id}`;
   const isOverview = pathname.replace(/\/$/, '') === base;
   const currentTab = TABS.find((tab) => tab.path && pathname.startsWith(`${base}/${tab.path}`));
-  const context: WorldContext = { world };
+  const context: WorldContext = { world, updateWorld: setWorld };
 
   return (
     <div className="flex flex-col">

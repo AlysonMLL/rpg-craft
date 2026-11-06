@@ -22,8 +22,11 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import ActivityStrip from '../components/activity/ActivityStrip';
-import { MarkdownView } from '../components/markdown/MarkdownView';
+import DocumentsSection from '../components/world/DocumentsSection';
+import SummarySection from '../components/world/SummarySection';
+import { SectionHeader } from '../components/world/SectionHeader';
 import { Badge, Card, EmptyState } from '../components/ui';
+import { authService } from '../api/auth';
 import { useScrollSpy } from '../hooks/useScrollSpy';
 import { useWorld } from '../hooks/useWorld';
 import { formatRelative } from '../lib/time';
@@ -70,21 +73,11 @@ const PORTALS: Portal[] = [
   },
 ];
 
-function SectionHeader({ id, title, Icon }: { id: string; title: string; Icon: LucideIcon }) {
-  return (
-    <div className="mb-4 flex items-center justify-between border-b border-gray-800 pb-3">
-      <h2 id={id} className="flex items-center gap-2 text-xl font-bold text-white">
-        <Icon size={20} className="text-rpg-primary" aria-hidden="true" />
-        {title}
-      </h2>
-    </div>
-  );
-}
-
 export default function WorldOverview() {
   const world = useWorld();
   const active = useScrollSpy(SECTION_IDS);
   const base = `/world/${world.id}`;
+  const canEdit = world.is_owner && !authService.isGuest();
 
   const goToSection = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
     event.preventDefault();
@@ -175,23 +168,19 @@ export default function WorldOverview() {
 
         {/* Resumo / Introdução */}
         <section id="resumo" aria-labelledby="resumo-titulo" className="scroll-mt-24">
-          <SectionHeader id="resumo-titulo" title="Resumo / Introdução" Icon={BookOpen} />
-          {world.introduction_markdown ? (
-            <MarkdownView content={world.introduction_markdown} className="max-w-[70ch]" />
-          ) : (
-            <EmptyState
-              title="Sem introdução ainda"
-              description="O resumo do mundo e a premissa da campanha aparecerão aqui."
-            />
-          )}
+          <SummarySection />
         </section>
 
-        {/* História (Lore) */}
+        {/* História (Lore): documentos .md */}
         <section id="historia" aria-labelledby="historia-titulo" className="scroll-mt-24">
-          <SectionHeader id="historia-titulo" title="História (Lore)" Icon={History} />
-          <EmptyState
-            title="Em breve"
-            description="Aqui ficarão os documentos de lore do mundo, em Markdown."
+          <DocumentsSection
+            worldId={world.id}
+            section="lore"
+            title="História (Lore)"
+            headingId="historia-titulo"
+            Icon={History}
+            canEdit={canEdit}
+            emptyDescription="Documentos de lore em Markdown: a queda do reino, os cultos, as lendas."
           />
         </section>
 

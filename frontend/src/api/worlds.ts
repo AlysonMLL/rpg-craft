@@ -40,6 +40,10 @@ export interface WorldCreateData {
   tag_ids: number[];
 }
 
+export type WorldUpdateData = Partial<
+  Pick<World, 'name' | 'synopsis' | 'introduction_markdown' | 'cover_image' | 'is_demo'>
+>;
+
 export const worldService = {
   getAllWorlds: async (): Promise<World[]> => {
     const response = await apiClient.get<World[]>('worlds/');
@@ -54,6 +58,12 @@ export const worldService = {
   // método para o POST
   createWorld: async (data: WorldCreateData): Promise<World> => {
     const response = await apiClient.post<World>('worlds/', data);
+    return response.data;
+  },
+
+  // Edição parcial do mundo (ex.: o Resumo / Introdução em Markdown)
+  updateWorld: async (id: number, data: WorldUpdateData): Promise<World> => {
+    const response = await apiClient.patch<World>(`worlds/${id}/`, data);
     return response.data;
   },
 
