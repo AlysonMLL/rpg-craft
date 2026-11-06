@@ -21,5 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('worlds.urls')), # rota base para api
     path('api/', include('notebook.urls')), # notas e tarefas
+    path('api/', include('activity.urls')), # log de atividade
     path('api/auth/', include('accounts.urls')), # rota base para autenticação
 ]
