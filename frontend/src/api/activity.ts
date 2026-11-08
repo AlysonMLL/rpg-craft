@@ -8,7 +8,7 @@
 import { apiClient } from './client';
 
 export type ActivityVerb = 'created' | 'updated' | 'deleted';
-export type ActivityTargetType = 'world' | 'note' | 'todo' | 'document';
+export type ActivityTargetType = 'world' | 'note' | 'todo' | 'document' | 'event';
 
 export interface Activity {
   id: number;

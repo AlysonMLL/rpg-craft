@@ -1,5 +1,5 @@
 /** Ícones, textos e links da atividade recente. */
-import { CheckSquare, FileText, Globe, StickyNote, type LucideIcon } from 'lucide-react';
+import { CalendarClock, CheckSquare, FileText, Globe, StickyNote, type LucideIcon } from 'lucide-react';
 import type { Activity, ActivityTargetType, ActivityVerb } from '../api/activity';
 
 interface TargetMeta {
@@ -15,6 +15,7 @@ export const TARGET_META: Record<ActivityTargetType, TargetMeta> = {
   note: { label: 'Nota', Icon: StickyNote, tone: 'bg-rpg-primary/10 text-rpg-primary', feminine: true },
   todo: { label: 'Tarefa', Icon: CheckSquare, tone: 'bg-orange-400/10 text-orange-400', feminine: true },
   document: { label: 'Documento', Icon: FileText, tone: 'bg-blue-400/10 text-blue-400', feminine: false },
+  event: { label: 'Evento', Icon: CalendarClock, tone: 'bg-slate-400/10 text-slate-300', feminine: false },
 };
 
 const VERBS: Record<ActivityVerb, [string, string]> = {
@@ -42,6 +43,8 @@ export function activityLink(activity: Activity): string | null {
     case 'document':
       // Abre a gaveta do documento na Visão geral do mundo (o mundo pode ter sido excluído)
       return activity.world ? `/world/${activity.world}?documento=${activity.target_id}` : null;
+    case 'event':
+      return activity.world ? `/world/${activity.world}#linha-do-tempo` : null;
     default:
       return null;
   }

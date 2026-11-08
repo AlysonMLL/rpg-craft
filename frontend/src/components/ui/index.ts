@@ -2,6 +2,7 @@ export { Button } from './Button';
 export { Input, Textarea } from './Input';
 export { InlineText } from './InlineText';
 export { Select } from './Select';
+export { TagInput } from './TagInput';
 export { Checkbox } from './Checkbox';
 export { Toggle } from './Toggle';
 export { Tabs, TabPanel } from './Tabs';

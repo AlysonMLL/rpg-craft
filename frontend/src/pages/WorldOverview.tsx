@@ -9,6 +9,7 @@
  */
 import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import {
   ArrowRight,
   BookOpen,
@@ -25,7 +26,8 @@ import ActivityStrip from '../components/activity/ActivityStrip';
 import DocumentsSection from '../components/world/DocumentsSection';
 import SummarySection from '../components/world/SummarySection';
 import { SectionHeader } from '../components/world/SectionHeader';
-import { Badge, Card, EmptyState } from '../components/ui';
+import TimelineSection from '../components/world/TimelineSection';
+import { Badge, Card } from '../components/ui';
 import { authService } from '../api/auth';
 import { useScrollSpy } from '../hooks/useScrollSpy';
 import { useWorld } from '../hooks/useWorld';
@@ -78,6 +80,11 @@ export default function WorldOverview() {
   const active = useScrollSpy(SECTION_IDS);
   const base = `/world/${world.id}`;
   const canEdit = world.is_owner && !authService.isGuest();
+  // Abrir com #secao na URL (ex.: link da atividade recente) rola até a seção
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (id) document.getElementById(id)?.scrollIntoView({ block: 'start' });
+  }, []);
 
   const goToSection = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
     event.preventDefault();
@@ -186,11 +193,7 @@ export default function WorldOverview() {
 
         {/* Linha do Tempo */}
         <section id="linha-do-tempo" aria-labelledby="linha-titulo" className="scroll-mt-24">
-          <SectionHeader id="linha-titulo" title="Linha do Tempo" Icon={Clock} />
-          <EmptyState
-            title="Em breve"
-            description="Os eventos do mundo no calendário da campanha aparecerão aqui."
-          />
+          <TimelineSection canEdit={canEdit} />
         </section>
       </div>
 

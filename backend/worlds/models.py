@@ -34,6 +34,11 @@ class World(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     # Última atividade em qualquer item do mundo (será alimentada pelo log de atividade)
     last_activity_at = models.DateTimeField(blank=True, null=True)
+    # Calendário do mundo (Linha do Tempo): nome da era e data atual da campanha ("Agora")
+    calendar_era_name = models.CharField(max_length=60, blank=True, default='')
+    now_year = models.IntegerField(blank=True, null=True)
+    now_month = models.PositiveSmallIntegerField(blank=True, null=True)
+    now_day = models.PositiveSmallIntegerField(blank=True, null=True)
     
     # Aqui entra a mágica: O Django cria a tabela 'world_tags' no banco automaticamente
     tags = models.ManyToManyField(Tag, related_name='worlds', blank=True)

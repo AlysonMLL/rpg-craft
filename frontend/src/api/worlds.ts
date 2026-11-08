@@ -28,6 +28,10 @@ export interface World {
   created_at: string;
   updated_at: string;
   last_activity_at: string | null;
+  calendar_era_name: string;
+  now_year: number | null;
+  now_month: number | null;
+  now_day: number | null;
   owner_name: string;
   is_owner: boolean;
   tags: Tag[];
@@ -41,7 +45,18 @@ export interface WorldCreateData {
 }
 
 export type WorldUpdateData = Partial<
-  Pick<World, 'name' | 'synopsis' | 'introduction_markdown' | 'cover_image' | 'is_demo'>
+  Pick<
+    World,
+    | 'name'
+    | 'synopsis'
+    | 'introduction_markdown'
+    | 'cover_image'
+    | 'is_demo'
+    | 'calendar_era_name'
+    | 'now_year'
+    | 'now_month'
+    | 'now_day'
+  >
 >;
 
 export const worldService = {
