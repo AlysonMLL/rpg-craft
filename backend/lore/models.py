@@ -83,4 +83,36 @@ class TimelineEvent(models.Model):
 
     def __str__(self):
         return self.title
+
+class Quest(models.Model):
+    """
+    Missão do mundo (aparece em "Resumo & Missões"). Status: Em andamento, Ociosa ou Concluída.
+    Personagens e locais são tags de texto simples, sem vínculo com fichas. `sort_order` define a
+    ordem dentro de cada status (nova missão vai para o fim).
+    """
+
+    class Status(models.TextChoices):
+        ACTIVE = 'active', 'Em andamento'
+        IDLE = 'idle', 'Ociosa'
+        DONE = 'done', 'Concluída'
+
+    world = models.ForeignKey('worlds.World', on_delete=models.CASCADE, related_name='quests')
+    title = models.CharField(max_length=160)
+    description_markdown = models.TextField(blank=True)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
+    characters = models.JSONField(default=list, blank=True)
+    locations = models.JSONField(default=list, blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'quests'
+        verbose_name = 'Missão'
+        verbose_name_plural = 'Missões'
+        ordering = ['sort_order', 'id']
+        indexes = [models.Index(fields=['world', 'status'])]
+
+    def __str__(self):
+        return self.title
     

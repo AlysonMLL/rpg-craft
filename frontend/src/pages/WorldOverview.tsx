@@ -36,7 +36,7 @@ import { cn } from '../lib/cn';
 
 const SECTIONS = [
   { id: 'inicio', label: 'Início', Icon: FileText },
-  { id: 'resumo', label: 'Resumo / Introdução', Icon: BookOpen },
+  { id: 'resumo', label: 'Resumo & Missões', Icon: BookOpen },
   { id: 'historia', label: 'História (Lore)', Icon: History },
   { id: 'linha-do-tempo', label: 'Linha do Tempo', Icon: Clock },
 ] as const;

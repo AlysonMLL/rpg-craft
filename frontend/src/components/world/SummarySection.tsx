@@ -11,6 +11,7 @@ import { MarkdownEditor } from '../markdown/MarkdownEditor';
 import { MarkdownView } from '../markdown/MarkdownView';
 import { Button, EmptyState, toast } from '../ui';
 import { SectionHeader } from './SectionHeader';
+import QuestsSection from './QuestsSection';
 
 export default function SummarySection() {
   const { world, updateWorld } = useWorldContext();
@@ -41,7 +42,7 @@ export default function SummarySection() {
     <>
       <SectionHeader
         id="resumo-titulo"
-        title="Resumo / Introdução"
+        title="Resumo & Missões"
         Icon={BookOpen}
         actions={
           canEdit &&
@@ -87,6 +88,9 @@ export default function SummarySection() {
           }
         />
       )}
+      <div className="mt-12">
+        <QuestsSection canEdit={canEdit} />
+      </div>
     </>
   );
 }

@@ -21,6 +21,7 @@ class Activity(models.Model):
         TODO = 'todo', 'Tarefa'
         DOCUMENT = 'document', 'Documento'
         EVENT = 'event', 'Evento'
+        QUEST = 'quest', 'Missão'
         # Entram aqui conforme os apps existirem: character, map, location, event...
 
     owner = models.ForeignKey(

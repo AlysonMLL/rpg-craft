@@ -1,5 +1,5 @@
 /** Ícones, textos e links da atividade recente. */
-import { CalendarClock, CheckSquare, FileText, Globe, StickyNote, type LucideIcon } from 'lucide-react';
+import { CalendarClock, CheckSquare, FileText, ScrollText, Globe, StickyNote, type LucideIcon } from 'lucide-react';
 import type { Activity, ActivityTargetType, ActivityVerb } from '../api/activity';
 
 interface TargetMeta {
@@ -16,6 +16,7 @@ export const TARGET_META: Record<ActivityTargetType, TargetMeta> = {
   todo: { label: 'Tarefa', Icon: CheckSquare, tone: 'bg-orange-400/10 text-orange-400', feminine: true },
   document: { label: 'Documento', Icon: FileText, tone: 'bg-blue-400/10 text-blue-400', feminine: false },
   event: { label: 'Evento', Icon: CalendarClock, tone: 'bg-slate-400/10 text-slate-300', feminine: false },
+  quest: { label: 'Missão', Icon: ScrollText, tone: 'bg-amber-400/10 text-amber-300', feminine: true },
 };
 
 const VERBS: Record<ActivityVerb, [string, string]> = {
