@@ -22,8 +22,8 @@ class Activity(models.Model):
         DOCUMENT = 'document', 'Documento'
         EVENT = 'event', 'Evento'
         QUEST = 'quest', 'Missão'
-        # Entram aqui conforme os apps existirem: character, map, location, event...
-
+        CHARACTER = 'character', 'Personagem'
+        
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='activities'
     )
