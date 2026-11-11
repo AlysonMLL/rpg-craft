@@ -19,6 +19,7 @@ import { characterService, type Character, type CharacterListItem } from '../api
 import { CharacterCard } from '../components/characters/CharacterCard';
 import { CharacterFiltersBar } from '../components/characters/CharacterFilters';
 import { CreateCharacterModal } from '../components/characters/CreateCharacterModal';
+import { CharacterDrawer } from '../components/characters/CharacterDrawer';
 import {
   Button,
   ConfirmDialog,
@@ -94,6 +95,21 @@ export default function Characters() {
       next.set('personagem', String(id));
       return next;
     });
+
+  const selectedId = Number(params.get('personagem')) || null;
+
+  const closeCharacter = () =>
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.delete('personagem');
+        return next;
+      },
+      { replace: true },
+    );
+
+  const handleUpdated = (updated: Character) =>
+    setCharacters((previous) => previous.map((item) => (item.id === updated.id ? toListItem(updated) : item)));
 
   const handleCreated = (created: Character) =>
     setCharacters((previous) => [...previous, toListItem(created)]);
@@ -265,6 +281,16 @@ export default function Characters() {
         characters={characters}
         onClose={() => setCreating(false)}
         onCreated={handleCreated}
+      />
+
+      <CharacterDrawer
+        characterId={selectedId}
+        worldId={world.id}
+        canEdit={canEdit}
+        characters={characters}
+        onClose={closeCharacter}
+        onUpdated={handleUpdated}
+        onDelete={setToDelete}
       />
 
       <ConfirmDialog

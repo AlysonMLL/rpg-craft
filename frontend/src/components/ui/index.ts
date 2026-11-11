@@ -18,3 +18,4 @@ export { Skeleton } from './Skeleton';
 export { Toaster, toast } from './Toaster';
 export { ConfirmDialog } from './ConfirmDialog';
 export { SortableGrid } from './SortableGrid';
+export { InlineNumber, InlineSelect, InlineTags, InlineTextarea } from './InlineFields';

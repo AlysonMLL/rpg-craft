@@ -1,7 +1,14 @@
 /**
- * Texto editável no lugar: parece texto; ao clicar vira um campo. Enter ou sair do
- * campo salva (se mudou e não ficou vazio), Esc cancela. Base para a edição inline
- * da ficha de personagem e das tarefas.
+ * Função do Arquivo: Texto editável no lugar: parece texto; ao clicar vira um campo. Enter ou
+ * sair do campo salva (se mudou), Esc cancela (sem fechar a gaveta/modal em volta). Base da
+ * edição inline da ficha de personagem e das tarefas.
+ *
+ * O que há ali:
+ * - InlineText: componente (props: value, onSave, ariaLabel, disabled, placeholder, maxLength,
+ *   allowEmpty, className).
+ *   - allowEmpty: permite salvar o texto vazio (campos opcionais). Por padrão, vazio é ignorado
+ *     (nomes e títulos não podem ficar sem texto).
+ *   - disabled: mostra só o texto (modo leitura / convidado).
  */
 import { useRef, useState } from 'react';
 import { cn } from '../../lib/cn';
@@ -13,6 +20,7 @@ interface InlineTextProps {
   disabled?: boolean;
   placeholder?: string;
   maxLength?: number;
+  allowEmpty?: boolean;
   className?: string;
 }
 
@@ -23,6 +31,7 @@ export function InlineText({
   disabled = false,
   placeholder = 'Sem texto',
   maxLength,
+  allowEmpty = false,
   className,
 }: InlineTextProps) {
   const [editing, setEditing] = useState(false);
@@ -36,7 +45,7 @@ export function InlineText({
   const commit = () => {
     setEditing(false);
     const next = draft.trim();
-    if (!cancelled.current && next && next !== value) onSave(next);
+    if (!cancelled.current && (next || allowEmpty) && next !== value) onSave(next);
     cancelled.current = false;
   };
 
@@ -52,6 +61,8 @@ export function InlineText({
         onKeyDown={(e) => {
           if (e.key === 'Enter') e.currentTarget.blur();
           if (e.key === 'Escape') {
+            e.preventDefault(); // não fecha a gaveta/modal junto
+            e.stopPropagation();
             cancelled.current = true;
             e.currentTarget.blur();
           }
@@ -64,7 +75,7 @@ export function InlineText({
   return (
     <button
       type="button"
-      aria-label={`${ariaLabel}: ${value}. Clique para editar`}
+      aria-label={`${ariaLabel}: ${value || 'vazio'}. Clique para editar`}
       onClick={() => {
         setDraft(value);
         setEditing(true);
