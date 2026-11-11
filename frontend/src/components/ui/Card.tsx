@@ -22,8 +22,7 @@ export function Card({ interactive = false, padded = true, className, ...rest }:
         'rounded-xl border border-gray-800 bg-rpg-card',
         padded && 'p-5',
         interactive &&
-          'card-shine cursor-pointer transition-[transform,box-shadow,border-color] duration-200 hover:border-rpg-primary/50 hover:shadow-lift hover:-translate-y-1',
-        className,
+          'card-shine cursor-pointer transition-[translate,box-shadow,border-color] duration-300 ease-out motion hover:border-rpg-primary/50 hover:shadow-lift hover:-translate-y-1',        className,
       )}
       {...rest}
     />

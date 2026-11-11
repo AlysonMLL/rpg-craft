@@ -19,12 +19,13 @@ import { authService } from './api/auth';
 import Login from './pages/Login';
 import Home from './pages/Home'; // Dashboard principal
 import MainLayout from './components/layout/MainLayout';
-import { Map as MapIcon, PawPrint, Users } from 'lucide-react';
+import { Map as MapIcon, PawPrint } from 'lucide-react';
 import WorldLayout from './components/world/WorldLayout';
 import WorldOverview from './pages/WorldOverview';
 import WorldSectionPlaceholder from './pages/WorldSectionPlaceholder';
 import Worlds from './pages/Worlds';
 import Notebook from './pages/Notebook';
+import Characters from './pages/Characters';
 import { Toaster } from './components/ui';
 
 // Página de estilo (opcional, só em dev)
@@ -63,16 +64,7 @@ export default function App() {
           {/* Espaço do mundo: layout compartilhado (hero + abas) com as páginas filhas */}
           <Route path="world/:id" element={<WorldLayout />}>
             <Route index element={<WorldOverview />} />
-            <Route
-              path="personagens"
-              element={
-                <WorldSectionPlaceholder
-                  title="Personagens"
-                  description="Fichas editáveis, relações e documentos dos personagens do mundo."
-                  Icon={Users}
-                />
-              }
-            />
+            <Route path="personagens" element={<Characters />} />
             <Route
               path="mapas"
               element={

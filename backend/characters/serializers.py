@@ -4,15 +4,17 @@ Há duas versões: uma leve para a grade (sem os textos longos) e a completa par
 gaveta e para criar/editar. Reaproveita as regras do app lore (só o dono escreve no
 próprio mundo; tags sem repetição).
 
-O que há aqui:
+O que há ali:
 - _tag_list(): cria um campo de lista de textos com limites (usado nas 4 listas).
-- CharacterSerializer: versão completa (leitura e escrita).
+- CharacterSerializer: versão completa (leitura e escrita). display_order é só leitura
+  (muda apenas pelo endpoint de reordenar); is_favorite é gravável.
 - CharacterListSerializer: versão leve, só leitura, usada em GET /characters/?world=.
 """
 
 from rest_framework import serializers
 
 from lore.timeline_serializers import _unique_tags, _WorldOwnershipMixin
+
 from .models import Character
 
 
@@ -31,14 +33,14 @@ class CharacterSerializer(_WorldOwnershipMixin, serializers.ModelSerializer):
     class Meta:
         model = Character
         fields = [
-            'id', 'world', 'name', 'portrait_url', 'status',
+            'id', 'world', 'name', 'portrait_url', 'status', 'is_favorite', 'display_order',
             'age', 'gender', 'race', 'classes', 'level', 'height',
             'appearance', 'voice',
             'role', 'origin', 'organizations',
             'items', 'skills', 'secrets', 'sheet_markdown',
             'created_at', 'updated_at',
         ]
-        read_only_fields = ['created_at', 'updated_at']
+        read_only_fields = ['display_order', 'created_at', 'updated_at']
         extra_kwargs = {'level': {'min_value': 0, 'max_value': 999}}
 
     def validate_classes(self, value):
@@ -60,7 +62,7 @@ class CharacterListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Character
         fields = [
-            'id', 'world', 'name', 'portrait_url', 'status', 'role', 'race',
-            'classes', 'level', 'organizations', 'updated_at',
+            'id', 'world', 'name', 'portrait_url', 'status', 'is_favorite', 'display_order',
+            'role', 'race', 'classes', 'level', 'organizations', 'updated_at',
         ]
         read_only_fields = fields

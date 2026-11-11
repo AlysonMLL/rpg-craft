@@ -1,5 +1,5 @@
 /** Ícones, textos e links da atividade recente. */
-import { CalendarClock, CheckSquare, FileText, ScrollText, Globe, StickyNote, type LucideIcon } from 'lucide-react';
+import { CalendarClock, CheckSquare, FileText, ScrollText, Globe, StickyNote, Users, type LucideIcon } from 'lucide-react';
 import type { Activity, ActivityTargetType, ActivityVerb } from '../api/activity';
 
 interface TargetMeta {
@@ -17,6 +17,7 @@ export const TARGET_META: Record<ActivityTargetType, TargetMeta> = {
   document: { label: 'Documento', Icon: FileText, tone: 'bg-blue-400/10 text-blue-400', feminine: false },
   event: { label: 'Evento', Icon: CalendarClock, tone: 'bg-slate-400/10 text-slate-300', feminine: false },
   quest: { label: 'Missão', Icon: ScrollText, tone: 'bg-amber-400/10 text-amber-300', feminine: true },
+  character: { label: 'Personagem', Icon: Users, tone: 'bg-rpg-secondary/10 text-rpg-secondary', feminine: false },
 };
 
 const VERBS: Record<ActivityVerb, [string, string]> = {
@@ -46,6 +47,8 @@ export function activityLink(activity: Activity): string | null {
       return activity.world ? `/world/${activity.world}?documento=${activity.target_id}` : null;
     case 'event':
       return activity.world ? `/world/${activity.world}#linha-do-tempo` : null;
+    case 'character':
+      return activity.world ? `/world/${activity.world}/personagens?personagem=${activity.target_id}` : null;
     default:
       return null;
   }

@@ -5,9 +5,11 @@ Itens e habilidades, Segredos) mais a ficha completa em Markdown. Raça, papel,
 organizações, classes, itens e habilidades são texto simples por enquanto (sem vínculo
 com outros apps), igual às tags da Linha do Tempo.
 
-O que há aqui:
+O que há ali:
 - Character: o modelo.
   - Character.Status: Vivo, Morto, Desaparecido, Desconhecido.
+  - is_favorite: estrela do card (só marca, não muda a ordem).
+  - display_order: posição na ordem personalizada (arrastar); muda só por /characters/reorder/.
   - Campos de texto curtos (idade, gênero, altura...) são CharField porque aceitam
     valores livres como "~300 anos" ou "Desconhecida".
   - Campos de lista (classes, organizations, items, skills) são JSONField com lista de textos.
@@ -30,6 +32,8 @@ class Character(models.Model):
     # Retrato: por enquanto só uma URL; o upload de imagens entra no final do projeto
     portrait_url = models.URLField(max_length=500, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ALIVE)
+    is_favorite = models.BooleanField(default=False)
+    display_order = models.PositiveIntegerField(default=0)
 
     # Identidade
     age = models.CharField(max_length=40, blank=True)
@@ -65,8 +69,8 @@ class Character(models.Model):
         db_table = 'characters'
         verbose_name = 'Personagem'
         verbose_name_plural = 'Personagens'
-        ordering = ['name', 'id']
-        indexes = [models.Index(fields=['world', 'name'])]
+        ordering = ['display_order', 'name', 'id']
+        indexes = [models.Index(fields=['world', 'display_order'])]
 
     def __str__(self):
         return self.name

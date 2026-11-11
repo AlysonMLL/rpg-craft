@@ -64,14 +64,6 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
 /* Brilho metálico nos cards clicáveis (classe usada pelo Card interactive).
    Um fio de luz fixo no topo + uma faixa diagonal que cruza o card uma vez no hover.
    O reflexo só anima transform (barato) e só existe em dispositivos com hover. */

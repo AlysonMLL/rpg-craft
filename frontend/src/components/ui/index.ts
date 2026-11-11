@@ -16,3 +16,5 @@ export { Banner } from './Banner';
 export { EmptyState } from './EmptyState';
 export { Skeleton } from './Skeleton';
 export { Toaster, toast } from './Toaster';
+export { ConfirmDialog } from './ConfirmDialog';
+export { SortableGrid } from './SortableGrid';

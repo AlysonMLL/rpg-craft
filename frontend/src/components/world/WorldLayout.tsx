@@ -57,7 +57,7 @@ export default function WorldLayout() {
   }
 
   const base = `/world/${world.id}`;
-  const isOverview = pathname.replace(/\/$/, '') === base;
+  // const isOverview = pathname.replace(/\/$/, '') === base;
   const currentTab = TABS.find((tab) => tab.path && pathname.startsWith(`${base}/${tab.path}`));
   const context: WorldContext = { world, updateWorld: setWorld };
 
@@ -65,10 +65,7 @@ export default function WorldLayout() {
     <div className="flex flex-col">
       {/* Hero */}
       <header
-        className={cn(
-          'relative flex w-full shrink-0 flex-col justify-end bg-gray-900 motion-safe:transition-[min-height] motion-safe:duration-300',
-          isOverview ? 'min-h-80' : 'min-h-40',
-        )}
+        className="relative flex min-h-80 w-full shrink-0 flex-col justify-end bg-gray-900" 
       >
         {world.cover_image ? (
           <img src={world.cover_image} alt="" className="absolute inset-0 z-0 h-full w-full object-cover" />
@@ -92,21 +89,17 @@ export default function WorldLayout() {
           </Link>
         </div>
 
-        <div className="relative z-20 mx-auto w-full max-w-7xl px-6 pb-5 pt-20 md:px-8">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
+          <div className="relative z-20 mx-auto w-full max-w-7xl px-6 pb-5 pt-20 md:px-8">
+          <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg md:text-5xl lg:text-6xl">
+            {world.name}
+          </h1>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             {world.is_demo && <Badge variant="highlight">Público</Badge>}
             {world.tags.map((tag) => (
               <Badge key={tag.id}>{tag.name}</Badge>
             ))}
+            {/* O botão "+ Tag" entra aqui quando eu quiser fazer depois*/}
           </div>
-          <h1
-            className={cn(
-              'font-extrabold tracking-tight text-white drop-shadow-lg motion-safe:transition-all',
-              isOverview ? 'text-4xl md:text-5xl lg:text-6xl' : 'text-2xl md:text-3xl',
-            )}
-          >
-            {world.name}
-          </h1>
         </div>
       </header>
 
