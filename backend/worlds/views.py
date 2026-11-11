@@ -1,6 +1,7 @@
 """
 O que há aqui:
-- TagViewSet: Endpoint apenas de leitura para categorias globais, liberado para qualquer pessoa.
+- TagViewSet: Categorias globais. Leitura liberada para qualquer pessoa; criar (POST /tags/)
+  exige login e devolve a tag já existente quando o nome repete (sem duplicar).
 - WorldViewSet: CRUD de Mundos. Leitura pública; escrita exige login e ser o dono.
 - WorldViewSet.get_queryset(): visitante anônimo (modo convidado) vê só mundos 'is_demo';
   usuário logado vê os próprios mundos mais os 'is_demo'.
@@ -18,7 +19,8 @@ contexto de autenticação antes de passar os dados para os serializers.
 
 from django.db import transaction
 from django.db.models import Q
-from rest_framework import permissions, status, viewsets
+from django.utils.text import slugify
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -30,12 +32,33 @@ from .permissions import IsOwnerOrReadOnly
 from .serializers import WorldSerializer, TagSerializer
 
 
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
+class TagViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    # Tags são públicas, qualquer um pode ver a lista para popular um select no frontend
-    permission_classes = [permissions.AllowAny]
 
+    def get_permissions(self):
+        # Tags são públicas para leitura (popular selects); criar exige login
+        if self.action == 'create':
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+    def create(self, request, *args, **kwargs):
+        name = ' '.join(str(request.data.get('name', '')).split())
+        slug = slugify(name)
+        if not name or not slug or len(name) > 50:
+            return Response(
+                {'detail': 'Informe um nome de até 50 caracteres, com letras ou números.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Mesmo nome (sem diferenciar maiúsculas) ou mesmo slug: devolve a que já existe
+        existing = Tag.objects.filter(Q(name__iexact=name) | Q(slug=slug)).first()
+        if existing:
+            return Response(TagSerializer(existing).data, status=status.HTTP_200_OK)
+
+        tag = Tag.objects.create(name=name, slug=slug)
+        return Response(TagSerializer(tag).data, status=status.HTTP_201_CREATED)
+    
 
 class WorldViewSet(viewsets.ModelViewSet):
     serializer_class = WorldSerializer

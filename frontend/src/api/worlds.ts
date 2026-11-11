@@ -57,11 +57,22 @@ export type WorldUpdateData = Partial<
     | 'now_month'
     | 'now_day'
   >
->;
+> & { tag_ids?: number[] };
 
 export const worldService = {
   getAllWorlds: async (): Promise<World[]> => {
     const response = await apiClient.get<World[]>('worlds/');
+    return response.data;
+  },
+
+  getAllTags: async (): Promise<Tag[]> => {
+    const response = await apiClient.get<Tag[]>('tags/');
+    return response.data;
+  },
+
+  // Cria uma tag global (se o nome já existir, o backend devolve a existente)
+  createTag: async (name: string): Promise<Tag> => {
+    const response = await apiClient.post<Tag>('tags/', { name });
     return response.data;
   },
 
@@ -92,9 +103,4 @@ export const worldService = {
   reorder: async (ids: number[]): Promise<void> => {
     await apiClient.post('worlds/reorder/', { ids });
   },
-
-  getAllTags: async (): Promise<Tag[]> => {
-    const response = await apiClient.get<Tag[]>('tags/');
-    return response.data;
-  }
 };

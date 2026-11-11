@@ -16,6 +16,8 @@ import type { WorldContext } from '../../hooks/useWorld';
 import { coverGradient } from '../../lib/worldUtils';
 import { cn } from '../../lib/cn';
 import { Badge, Skeleton, toast } from '../ui';
+import { authService } from '../../api/auth';
+import { WorldTagsEditor } from './WorldTagsEditor';
 
 const TABS = [
   { path: '', label: 'Visão geral', Icon: LayoutGrid },
@@ -60,6 +62,7 @@ export default function WorldLayout() {
   // const isOverview = pathname.replace(/\/$/, '') === base;
   const currentTab = TABS.find((tab) => tab.path && pathname.startsWith(`${base}/${tab.path}`));
   const context: WorldContext = { world, updateWorld: setWorld };
+  const canEdit = world.is_owner && !authService.isGuest();
 
   return (
     <div className="flex flex-col">
@@ -98,7 +101,7 @@ export default function WorldLayout() {
             {world.tags.map((tag) => (
               <Badge key={tag.id}>{tag.name}</Badge>
             ))}
-            {/* O botão "+ Tag" entra aqui quando eu quiser fazer depois*/}
+            {canEdit && <WorldTagsEditor world={world} onSaved={setWorld} />}
           </div>
         </div>
       </header>
