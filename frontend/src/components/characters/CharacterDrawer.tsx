@@ -16,7 +16,7 @@
 
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Star, Trash2 } from 'lucide-react';
+import { Download, Star, Trash2 } from 'lucide-react';
 import {
   characterService,
   type Character,
@@ -41,6 +41,8 @@ import {
 } from '../ui';
 import { CharacterPortrait } from './CharacterPortrait';
 import { CharacterSecrets } from './CharacterSecrets';
+import { downloadMarkdown } from '../../lib/markdownFile';
+import { CharacterSheetTab } from './CharacterSheetTab';
 
 const FIELD = 'block px-2 py-1 text-sm text-gray-200';
 const STATUS_OPTIONS = STATUS_ORDER.map((value) => ({ value, label: STATUS_META[value].label }));
@@ -250,29 +252,48 @@ export function CharacterDrawer({
     void save({ portrait_url: value });
   };
 
-  const headerActions = canEdit && current && (
+  // Mantém o texto da ficha completa em dia no estado local (quem salva é o CharacterSheetTab)
+  const changeSheet = (markdown: string) =>
+    setCharacter((previous) => (previous ? { ...previous, sheet_markdown: markdown } : previous));
+
+  const headerActions = current && (
     <>
-      <button
-        type="button"
-        aria-pressed={current.is_favorite}
-        aria-label={current.is_favorite ? 'Remover dos favoritos' : 'Favoritar'}
-        onClick={() => void save({ is_favorite: !current.is_favorite })}
-        className="rounded-md p-1.5 text-rpg-muted transition-colors hover:text-rpg-primary"
-      >
-        <Star
-          size={20}
-          aria-hidden="true"
-          className={current.is_favorite ? 'fill-rpg-primary text-rpg-primary' : ''}
-        />
-      </button>
-      <button
-        type="button"
-        aria-label="Excluir personagem"
-        onClick={() => onDelete(toListItem(current))}
-        className="rounded-md p-1.5 text-rpg-muted transition-colors hover:text-rpg-danger"
-      >
-        <Trash2 size={20} aria-hidden="true" />
-      </button>
+      {tab === 'completa' && (
+        <button
+          type="button"
+          aria-label="Exportar ficha como .md"
+          title="Exportar ficha como .md"
+          onClick={() => downloadMarkdown(current.name, current.sheet_markdown)}
+          className="rounded-md p-1.5 text-rpg-muted transition-colors hover:text-white"
+        >
+          <Download size={20} aria-hidden="true" />
+        </button>
+      )}
+      {canEdit && (
+        <>
+          <button
+            type="button"
+            aria-pressed={current.is_favorite}
+            aria-label={current.is_favorite ? 'Remover dos favoritos' : 'Favoritar'}
+            onClick={() => void save({ is_favorite: !current.is_favorite })}
+            className="rounded-md p-1.5 text-rpg-muted transition-colors hover:text-rpg-primary"
+          >
+            <Star
+              size={20}
+              aria-hidden="true"
+              className={current.is_favorite ? 'fill-rpg-primary text-rpg-primary' : ''}
+            />
+          </button>
+          <button
+            type="button"
+            aria-label="Excluir personagem"
+            onClick={() => onDelete(toListItem(current))}
+            className="rounded-md p-1.5 text-rpg-muted transition-colors hover:text-rpg-danger"
+          >
+            <Trash2 size={20} aria-hidden="true" />
+          </button>
+        </>
+      )}
     </>
   );
 
@@ -286,6 +307,7 @@ export function CharacterDrawer({
     >
       {current ? (
         <div className="space-y-6">
+          {tab === 'rapida' && (
           <div>
             <CharacterPortrait name={current.name} url={current.portrait_url} className="h-72 w-full rounded-xl" />
             <div className="mt-2">
@@ -302,6 +324,7 @@ export function CharacterDrawer({
               />
             </div>
           </div>
+          )}
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="min-w-0 flex-1">
@@ -347,9 +370,11 @@ export function CharacterDrawer({
           </TabPanel>
 
           <TabPanel idPrefix="char-sheet" value="completa" current={tab}>
-            <EmptyState
-              title="Ficha completa em breve"
-              description="Aqui ficará a ficha em Markdown, com editor, e os documentos do personagem."
+            <CharacterSheetTab
+              character={current}
+              canEdit={canEdit}
+              onDraftChange={changeSheet}
+              onSaved={onUpdated}
             />
           </TabPanel>
         </div>

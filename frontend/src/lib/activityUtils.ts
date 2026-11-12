@@ -1,6 +1,7 @@
 /** Ícones, textos e links da atividade recente. */
 import { CalendarClock, CheckSquare, FileText, ScrollText, Globe, StickyNote, Users, type LucideIcon } from 'lucide-react';
 import type { Activity, ActivityTargetType, ActivityVerb } from '../api/activity';
+import type { DocumentSection } from '../api/documents';
 
 interface TargetMeta {
   label: string;
@@ -26,6 +27,14 @@ const VERBS: Record<ActivityVerb, [string, string]> = {
   deleted: ['Excluído', 'Excluída'],
 };
 
+/** Página onde mora cada seção de documentos (História fica na Visão geral). */
+const DOCUMENT_PATHS: Record<DocumentSection, string> = {
+  lore: '',
+  characters: '/personagens',
+  maps: '/mapas',
+  peoples: '/racas-criaturas',
+};
+
 /** "Editado" / "Editada", conforme o gênero do tipo. */
 export function verbLabel(activity: Activity): string {
   const [masculine, feminine] = VERBS[activity.verb];
@@ -49,6 +58,12 @@ export function activityLink(activity: Activity): string | null {
       return activity.world ? `/world/${activity.world}#linha-do-tempo` : null;
     case 'character':
       return activity.world ? `/world/${activity.world}/personagens?personagem=${activity.target_id}` : null;
+    case 'document': {
+      // Abre a gaveta do documento na página da seção (o mundo pode ter sido excluído)
+      if (!activity.world) return null;
+      const path = DOCUMENT_PATHS[activity.target_section ?? 'lore'];
+      return `/world/${activity.world}${path}?documento=${activity.target_id}`;
+    }
     default:
       return null;
   }

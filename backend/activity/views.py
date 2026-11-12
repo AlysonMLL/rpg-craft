@@ -10,6 +10,7 @@ from rest_framework.response import Response
 
 from .models import Activity
 from .serializers import ActivitySerializer
+from lore.models import Document
 
 
 class ActivityListView(generics.ListAPIView):
@@ -36,5 +37,17 @@ class ActivityListView(generics.ListAPIView):
         except ValueError:
             limit = 10
         limit = max(1, min(limit, 50))
-        activities = self.get_queryset().order_by('-created_at')[:limit]
-        return Response(self.get_serializer(activities, many=True).data)
+        activities = list(self.get_queryset().order_by('-created_at')[:limit])
+
+        # Uma única consulta para descobrir a seção de cada documento (evita N+1)
+        document_ids = [
+            a.target_id for a in activities
+            if a.target_type == Activity.Target.DOCUMENT and not a.target_deleted
+        ]
+        sections = dict(Document.objects.filter(pk__in=document_ids).values_list('id', 'section'))
+
+        serializer = self.get_serializer(
+            activities, many=True,
+            context={**self.get_serializer_context(), 'document_sections': sections},
+        )
+        return Response(serializer.data)

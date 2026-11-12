@@ -6,9 +6,11 @@
  */
 
 import { apiClient } from './client';
+import type { DocumentSection } from './documents';
 
 export type ActivityVerb = 'created' | 'updated' | 'deleted';
 export type ActivityTargetType = 'world' | 'note' | 'todo' | 'document' | 'event' | 'quest' | 'character';
+
 
 export interface Activity {
   id: number;
@@ -17,6 +19,7 @@ export interface Activity {
   target_id: number;
   target_label: string;
   target_deleted: boolean;
+  target_section: DocumentSection | null;
   world: number | null;
   world_name: string | null;
   created_at: string;

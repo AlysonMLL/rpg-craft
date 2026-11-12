@@ -20,6 +20,7 @@ import { CharacterCard } from '../components/characters/CharacterCard';
 import { CharacterFiltersBar } from '../components/characters/CharacterFilters';
 import { CreateCharacterModal } from '../components/characters/CreateCharacterModal';
 import { CharacterDrawer } from '../components/characters/CharacterDrawer';
+import DocumentsSection from '../components/world/DocumentsSection';
 import {
   Button,
   ConfirmDialog,
@@ -274,6 +275,17 @@ export default function Characters() {
           description="O grafo de relações entre personagens (família, romance, aliança, inimizade e mentoria) chega em uma próxima etapa."
         />
       </TabPanel>
+      
+      <section id="documentos" aria-labelledby="documentos-personagens-titulo" className="mt-12 scroll-mt-24">
+        <DocumentsSection
+          worldId={world.id}
+          section="characters"
+          title="Documentos .md"
+          headingId="documentos-personagens-titulo"
+          canEdit={canEdit}
+          emptyDescription="Anotações sobre o elenco em Markdown: grupos, rivalidades, ideias de arcos."
+        />
+      </section>
 
       <CreateCharacterModal
         open={creating}
