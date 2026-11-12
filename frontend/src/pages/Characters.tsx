@@ -207,7 +207,7 @@ export default function Characters() {
         {isLoading ? (
           <div className={GRID} aria-busy="true">
             {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
-              <Skeleton key={i} className="h-72" />
+              <Skeleton key={i} className="h-96" />
             ))}
           </div>
         ) : characters.length === 0 ? (

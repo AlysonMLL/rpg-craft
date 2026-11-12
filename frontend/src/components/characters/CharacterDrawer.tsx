@@ -1,22 +1,24 @@
 /**
  * Função do Arquivo: Gaveta da ficha do personagem (aberta por ?personagem=ID). Busca a ficha
- * completa ao abrir e mostra: retrato no topo com o campo da URL logo abaixo, nome e status,
- * e as abas Ficha rápida | Ficha completa (a completa chega na parte 3; a gaveta alarga nela).
- * A ficha rápida é editável inline para o dono (atualização otimista, com volta atrás e toast
- * se a API falhar); convidado só lê. Favoritar e excluir ficam no cabeçalho.
+ * completa ao abrir. O cabeçalho traz as abas Ficha rápida | Ficha completa (a largura da
+ * gaveta não muda entre elas; o painel é redimensionável até 50% da tela). Na Ficha rápida:
+ * retrato 3:4 ao lado de nome, status e endereço da imagem (com o botão "Enquadrar") e as seções
+ * editáveis inline. Na Ficha completa: faixa compacta (miniatura, nome, status) e o editor
+ * Markdown. A edição é inline para o dono (atualização otimista, com volta atrás e toast se a
+ * API falhar); convidado só lê. Favoritar e excluir ficam no cabeçalho.
  *
  * O que há ali:
  * - CharacterDrawer: componente (props: characterId, worldId, canEdit, characters, onClose,
  *   onUpdated, onDelete). Mantém o último id para o conteúdo não sumir durante a animação de
  *   fechar, e trata carregando / erro / personagem de outro mundo.
  * - QuickSheet (interno): seções Identidade, Aparência e voz, Narrativa, Itens e habilidades,
- *   Segredos.
+ *   Segredos (fonte base de 16px; os campos herdam o tamanho).
  * - Section / Field (internos): título de seção e linha "rótulo + valor".
  */
 
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Download, Star, Trash2 } from 'lucide-react';
+import { Crop, Download, Star, Trash2 } from 'lucide-react';
 import {
   characterService,
   type Character,
@@ -25,8 +27,11 @@ import {
   type CharacterUpdateData,
 } from '../../api/characters';
 import { STATUS_META, STATUS_ORDER, collectTags, toListItem } from '../../lib/characterUtils';
+import { cn } from '../../lib/cn';
+import { downloadMarkdown } from '../../lib/markdownFile';
 import {
   Badge,
+  Button,
   Drawer,
   EmptyState,
   InlineNumber,
@@ -41,10 +46,10 @@ import {
 } from '../ui';
 import { CharacterPortrait } from './CharacterPortrait';
 import { CharacterSecrets } from './CharacterSecrets';
-import { downloadMarkdown } from '../../lib/markdownFile';
 import { CharacterSheetTab } from './CharacterSheetTab';
+import { PortraitCropModal } from './PortraitCropModal';
 
-const FIELD = 'block px-2 py-1 text-sm text-gray-200';
+const FIELD = 'block px-2 py-1 text-gray-200';
 const STATUS_OPTIONS = STATUS_ORDER.map((value) => ({ value, label: STATUS_META[value].label }));
 
 type TextField = 'age' | 'gender' | 'race' | 'height' | 'role' | 'origin';
@@ -57,16 +62,16 @@ const patchOf = (field: string, value: unknown) => ({ [field]: value }) as Chara
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section>
-      <h3 className="mb-2 border-b border-gray-800 pb-2 text-sm font-bold text-white">{title}</h3>
-      <div className="space-y-1">{children}</div>
+      <h3 className="mb-3 border-b border-gray-800 pb-2 text-base font-bold text-white">{title}</h3>
+      <div className="space-y-1.5">{children}</div>
     </section>
   );
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="grid grid-cols-[6.5rem_1fr] items-start gap-x-3">
-      <span className="pt-1 text-xs text-rpg-muted">{label}</span>
+    <div className="grid grid-cols-[7.5rem_1fr] items-start gap-x-3">
+      <span className="pt-1.5 text-sm text-rpg-muted">{label}</span>
       <div className="min-w-0">{children}</div>
     </div>
   );
@@ -121,14 +126,14 @@ function QuickSheet({ character, canEdit, characters, save }: QuickSheetProps) {
         suggestions={suggestions}
         maxLength={limits.maxLength}
         maxTags={limits.maxTags}
-        className="px-2 py-1 text-sm text-gray-200"
+        className="px-2 py-1 text-gray-200"
         onSave={(value) => save(patchOf(field, value))}
       />
     </Field>
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7 text-base">
       <Section title="Identidade">
         {textField('age', 'Idade', 40)}
         {textField('gender', 'Gênero', 40)}
@@ -203,10 +208,12 @@ export function CharacterDrawer({
   const [character, setCharacter] = useState<Character | null>(null);
   const [failedId, setFailedId] = useState<number | null>(null);
   const [tab, setTab] = useState('rapida');
+  const [cropping, setCropping] = useState(false);
 
   if (characterId !== null && characterId !== lastId) {
     setLastId(characterId);
     setTab('rapida');
+    setCropping(false);
   }
 
   useEffect(() => {
@@ -229,6 +236,7 @@ export function CharacterDrawer({
   }, [characterId, worldId]);
 
   const current = character && character.id === lastId ? character : null;
+  const quick = tab === 'rapida';
 
   const save = async (patch: CharacterUpdateData) => {
     if (!current) return;
@@ -249,12 +257,35 @@ export function CharacterDrawer({
       toast.error('Use um endereço que comece com http:// ou https://.');
       return;
     }
-    void save({ portrait_url: value });
+    // Outra imagem pede outro enquadramento (o servidor também zera, por garantia)
+    void save({ portrait_url: value, portrait_crop: null });
   };
 
   // Mantém o texto da ficha completa em dia no estado local (quem salva é o CharacterSheetTab)
   const changeSheet = (markdown: string) =>
     setCharacter((previous) => (previous ? { ...previous, sheet_markdown: markdown } : previous));
+
+  const nameField = current && (
+    <InlineText
+      value={current.name}
+      ariaLabel="Nome"
+      maxLength={120}
+      disabled={!canEdit}
+      className={cn('block break-words px-2 py-1 font-bold text-white', quick ? 'text-2xl' : 'text-xl')}
+      onSave={(name) => void save({ name })}
+    />
+  );
+
+  const statusField = current && (
+    <InlineSelect<CharacterStatus>
+      value={current.status}
+      options={STATUS_OPTIONS}
+      ariaLabel="Status"
+      disabled={!canEdit}
+      renderValue={(option) => <Badge variant={STATUS_META[option.value].variant}>{option.label}</Badge>}
+      onSave={(status) => void save({ status })}
+    />
+  );
 
   const headerActions = current && (
     <>
@@ -298,60 +329,18 @@ export function CharacterDrawer({
   );
 
   return (
-    <Drawer
-      open={characterId !== null}
-      onClose={onClose}
-      title="Ficha do personagem"
-      headerActions={headerActions}
-      width={tab === 'completa' ? 'xl' : 'lg'}
-    >
-      {current ? (
-        <div className="space-y-6">
-          {tab === 'rapida' && (
-          <div>
-            <CharacterPortrait name={current.name} url={current.portrait_url} className="h-72 w-full rounded-xl" />
-            <div className="mt-2">
-              <span className="px-2 text-xs text-rpg-muted">Endereço do retrato</span>
-              <InlineText
-                value={current.portrait_url}
-                allowEmpty
-                ariaLabel="Endereço do retrato"
-                maxLength={500}
-                placeholder="Cole o endereço da imagem (https://…)"
-                disabled={!canEdit}
-                className="block truncate px-2 py-1 text-xs text-gray-200"
-                onSave={saveUrl}
-              />
-            </div>
-          </div>
-          )}
-
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="min-w-0 flex-1">
-              <InlineText
-                value={current.name}
-                ariaLabel="Nome"
-                maxLength={120}
-                disabled={!canEdit}
-                className="block break-words px-2 py-1 text-2xl font-bold text-white"
-                onSave={(name) => void save({ name })}
-              />
-            </div>
-            <InlineSelect<CharacterStatus>
-              value={current.status}
-              options={STATUS_OPTIONS}
-              ariaLabel="Status"
-              disabled={!canEdit}
-              renderValue={(option) => (
-                <Badge variant={STATUS_META[option.value].variant}>{option.label}</Badge>
-              )}
-              onSave={(status) => void save({ status })}
-            />
-          </div>
-
+    <>
+      <Drawer
+        open={characterId !== null}
+        onClose={onClose}
+        ariaLabel={current ? `Ficha de ${current.name}` : 'Ficha do personagem'}
+        headerActions={headerActions}
+        resizable={{ storageKey: 'rpgcraft:drawer-width:characters' }}
+        headerContent={
           <Tabs
             idPrefix="char-sheet"
             ariaLabel="Seções da ficha"
+            bordered={false}
             value={tab}
             onChange={setTab}
             items={[
@@ -359,37 +348,105 @@ export function CharacterDrawer({
               { value: 'completa', label: 'Ficha completa' },
             ]}
           />
+        }
+      >
+        {current ? (
+          <div className="space-y-6">
+            {quick ? (
+              <div className="flex flex-col gap-4 sm:flex-row sm:gap-5">
+                <CharacterPortrait
+                  name={current.name}
+                  url={current.portrait_url}
+                  crop={current.portrait_crop}
+                  initialsClassName="text-5xl"
+                  className="aspect-[3/4] w-40 shrink-0 rounded-xl sm:w-44"
+                />
+                <div className="min-w-0 flex-1 space-y-3">
+                  {nameField}
+                  <div>{statusField}</div>
+                  <div>
+                    <span className="px-2 text-sm text-rpg-muted">Endereço do retrato</span>
+                    <InlineText
+                      value={current.portrait_url}
+                      allowEmpty
+                      ariaLabel="Endereço do retrato"
+                      maxLength={500}
+                      placeholder="Cole o endereço da imagem (https://…)"
+                      disabled={!canEdit}
+                      className="block truncate px-2 py-1 text-sm text-gray-200"
+                      onSave={saveUrl}
+                    />
+                  </div>
+                  {canEdit && current.portrait_url !== '' && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      leftIcon={<Crop size={14} aria-hidden="true" />}
+                      onClick={() => setCropping(true)}
+                    >
+                      Enquadrar
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <CharacterPortrait
+                  name={current.name}
+                  url={current.portrait_url}
+                  crop={current.portrait_crop}
+                  initialsClassName="text-sm"
+                  className="aspect-[3/4] w-11 shrink-0 rounded-md"
+                />
+                <div className="min-w-0 flex-1">{nameField}</div>
+                {statusField}
+              </div>
+            )}
 
-          <TabPanel idPrefix="char-sheet" value="rapida" current={tab}>
-            <QuickSheet
-              character={current}
-              canEdit={canEdit}
-              characters={characters}
-              save={(patch) => void save(patch)}
-            />
-          </TabPanel>
+            <TabPanel idPrefix="char-sheet" value="rapida" current={tab}>
+              <QuickSheet
+                character={current}
+                canEdit={canEdit}
+                characters={characters}
+                save={(patch) => void save(patch)}
+              />
+            </TabPanel>
 
-          <TabPanel idPrefix="char-sheet" value="completa" current={tab}>
-            <CharacterSheetTab
-              character={current}
-              canEdit={canEdit}
-              onDraftChange={changeSheet}
-              onSaved={onUpdated}
-            />
-          </TabPanel>
-        </div>
-      ) : failedId === lastId && lastId !== null ? (
-        <EmptyState
-          title="Personagem não encontrado"
-          description="Ele pode ter sido excluído ou não pertence a este mundo."
-        />
-      ) : (
-        <div className="space-y-4" aria-busy="true">
-          <Skeleton className="h-72 w-full" />
-          <Skeleton className="h-8 w-2/3" />
-          <Skeleton className="h-40 w-full" />
-        </div>
-      )}
-    </Drawer>
+            <TabPanel idPrefix="char-sheet" value="completa" current={tab}>
+              <CharacterSheetTab
+                character={current}
+                canEdit={canEdit}
+                onDraftChange={changeSheet}
+                onSaved={onUpdated}
+              />
+            </TabPanel>
+          </div>
+        ) : failedId === lastId && lastId !== null ? (
+          <EmptyState
+            title="Personagem não encontrado"
+            description="Ele pode ter sido excluído ou não pertence a este mundo."
+          />
+        ) : (
+          <div className="space-y-4" aria-busy="true">
+            <div className="flex gap-5">
+              <Skeleton className="h-60 w-44 shrink-0" />
+              <div className="flex-1 space-y-3">
+                <Skeleton className="h-8 w-2/3" />
+                <Skeleton className="h-6 w-24" />
+              </div>
+            </div>
+            <Skeleton className="h-40 w-full" />
+          </div>
+        )}
+      </Drawer>
+
+      <PortraitCropModal
+        open={cropping && current !== null && current.portrait_url !== ''}
+        imageUrl={current?.portrait_url ?? ''}
+        initialCrop={current?.portrait_crop ?? null}
+        onSave={(crop) => void save({ portrait_crop: crop })}
+        onClose={() => setCropping(false)}
+      />
+    </>
   );
 }

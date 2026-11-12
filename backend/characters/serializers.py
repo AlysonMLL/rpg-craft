@@ -34,7 +34,7 @@ class CharacterSerializer(_WorldOwnershipMixin, serializers.ModelSerializer):
     class Meta:
         model = Character
         fields = [
-            'id', 'world', 'name', 'portrait_url', 'status', 'is_favorite', 'display_order',
+            'id', 'world', 'name', 'portrait_url', 'portrait_crop', 'status', 'is_favorite', 'display_order',
             'age', 'gender', 'race', 'classes', 'level', 'height',
             'appearance', 'voice',
             'role', 'origin', 'organizations',
@@ -56,6 +56,42 @@ class CharacterSerializer(_WorldOwnershipMixin, serializers.ModelSerializer):
     def validate_skills(self, value):
         return _unique_tags(value)
 
+    def validate_portrait_crop(self, value):
+        if value is None:
+            return None
+        keys = {'x', 'y', 'width', 'height'}
+        if not isinstance(value, dict) or set(value) != keys:
+            raise serializers.ValidationError('Envie x, y, width e height (em porcentagem).')
+        numbers = {}
+        for key in keys:
+            number = value[key]
+            if isinstance(number, bool) or not isinstance(number, (int, float)):
+                raise serializers.ValidationError('Os valores do enquadramento precisam ser números.')
+            numbers[key] = round(float(number), 2)
+        inside = (
+            numbers['x'] >= 0 and numbers['y'] >= 0
+            and numbers['width'] >= 1 and numbers['height'] >= 1
+            and numbers['x'] + numbers['width'] <= 100.5
+            and numbers['y'] + numbers['height'] <= 100.5
+        )
+        if not inside:
+            raise serializers.ValidationError('O enquadramento precisa estar dentro da imagem.')
+        return numbers
+
+    def update(self, instance, validated_data):
+        # Trocou a URL sem mandar um enquadramento novo: o antigo não vale mais
+        new_url = validated_data.get('portrait_url')
+        if new_url is not None and new_url != instance.portrait_url and 'portrait_crop' not in validated_data:
+            validated_data['portrait_crop'] = None
+        return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+        # Só o dono do mundo recebe os segredos (convidado de mundo demo recebe vazio)
+        if not request or request.user.id != instance.world.owner_id:
+            data['secrets'] = ''
+        return data
 
 class CharacterListSerializer(serializers.ModelSerializer):
     """Só o que a grade e os filtros precisam; o resto vem ao abrir a gaveta."""
@@ -63,7 +99,7 @@ class CharacterListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Character
         fields = [
-            'id', 'world', 'name', 'portrait_url', 'status', 'is_favorite', 'display_order',
+            'id', 'world', 'name', 'portrait_url', 'portrait_crop', 'status', 'is_favorite', 'display_order',
             'role', 'race', 'classes', 'level', 'organizations', 'updated_at',
         ]
         read_only_fields = fields

@@ -59,7 +59,8 @@ export function CharacterCard({
         <CharacterPortrait
           name={character.name}
           url={character.portrait_url}
-          className="aspect-square w-full"
+          crop={character.portrait_crop}
+          className="aspect-[3/4] w-full"
         />
 
         {handle && <div className="absolute left-3 top-3 z-10">{handle}</div>}

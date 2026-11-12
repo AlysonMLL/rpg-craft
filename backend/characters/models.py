@@ -32,6 +32,10 @@ class Character(models.Model):
     name = models.CharField(max_length=120)
     # Retrato: por enquanto só uma URL; o upload de imagens entra no final do projeto
     portrait_url = models.URLField(max_length=500, blank=True)
+    # Enquadramento do retrato: parte da imagem que aparece, em % da imagem original
+    # ({"x","y","width","height"}). null = sem enquadramento (a tela recorta pelo topo).
+    # Zera sozinho quando a URL do retrato muda (ver CharacterSerializer.update).
+    portrait_crop = models.JSONField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ALIVE)
     is_favorite = models.BooleanField(default=False)
     display_order = models.PositiveIntegerField(default=0)

@@ -25,6 +25,8 @@ import type {
 type BadgeVariant = 'success' | 'danger' | 'highlight' | 'neutral';
 
 export const STATUS_ORDER: CharacterStatus[] = ['alive', 'dead', 'missing', 'unknown'];
+/** Proporção do retrato (largura / altura). As classes aspect-[3/4] das telas precisam bater com ela. */
+export const PORTRAIT_ASPECT = 3 / 4;
 
 export const STATUS_META: Record<CharacterStatus, { label: string; variant: BadgeVariant }> = {
   alive: { label: 'Vivo', variant: 'success' },
@@ -53,6 +55,7 @@ export function toListItem(character: Character): CharacterListItem {
     world: character.world,
     name: character.name,
     portrait_url: character.portrait_url,
+    portrait_crop: character.portrait_crop,
     status: character.status,
     is_favorite: character.is_favorite,
     display_order: character.display_order,
@@ -71,6 +74,7 @@ export function toCreateData(character: Character): CharacterCreateData {
     world: character.world,
     name: character.name,
     portrait_url: character.portrait_url,
+    portrait_crop: character.portrait_crop,
     status: character.status,
     is_favorite: character.is_favorite,
     age: character.age,
