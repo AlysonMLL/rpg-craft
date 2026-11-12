@@ -5,7 +5,7 @@
  * um espaço reservado (o grafo vem na parte 4). Clicar num card grava ?personagem=ID na URL
  * (a gaveta da ficha entra na parte 2). Dono edita; convidado só lê.
  *
- * O que há ali:
+ * O que há aqui:
  * - Characters (export default): carrega a lista leve do mundo e controla filtros, ordenação,
  *   aba, modal de criação, confirmação de exclusão e os estados carregando / vazio / sem
  *   resultado. O arraste só vale na ordem "Personalizada" e sem filtros ativos.
@@ -21,6 +21,7 @@ import { CharacterFiltersBar } from '../components/characters/CharacterFilters';
 import { CreateCharacterModal } from '../components/characters/CreateCharacterModal';
 import { CharacterDrawer } from '../components/characters/CharacterDrawer';
 import DocumentsSection from '../components/world/DocumentsSection';
+import { RelationsTab } from '../components/characters/RelationsTab';
 import {
   Button,
   ConfirmDialog,
@@ -269,10 +270,11 @@ export default function Characters() {
       </TabPanel>
 
       <TabPanel idPrefix="char" value="relacoes" current={tab}>
-        <EmptyState
-          icon={<Network size={28} aria-hidden="true" />}
-          title="Relações em breve"
-          description="O grafo de relações entre personagens (família, romance, aliança, inimizade e mentoria) chega em uma próxima etapa."
+        <RelationsTab
+          worldId={world.id}
+          characters={characters}
+          canEdit={canEdit}
+          onOpenCharacter={openCharacter}
         />
       </TabPanel>
       

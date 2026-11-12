@@ -8,12 +8,13 @@ POST /api/characters/reorder/ (corpo: {"world": ID, "ids": [...]}).
 - Criar, editar e excluir entram no log de atividade (edições em 10 min viram uma só).
   Favoritar e reordenar NÃO entram no log.
 
-O que há ali:
+O que há aqui:
 - CharacterViewSet: herda a regra de acesso por mundo de lore.timeline_views._WorldScopedViewSet.
   - get_serializer_class(): serializer leve na lista e completo nas demais ações.
   - perform_create(): coloca o novo personagem no fim da ordem personalizada.
   - perform_update() / perform_destroy(): registram a atividade.
   - reorder(): grava a nova ordem; ids que faltam na lista vão para o fim, sem mudar entre si.
+  - RelationshipViewSet: CRUD das relações entre personagens (sem log de atividade).
 """
 
 from django.db.models import Max
@@ -26,8 +27,8 @@ from activity.services import log_activity
 from lore.timeline_views import _WorldScopedViewSet
 from worlds.models import World
 
-from .models import Character
-from .serializers import CharacterListSerializer, CharacterSerializer
+from .models import Character, Relationship
+from .serializers import CharacterListSerializer, CharacterSerializer, RelationshipSerializer
 
 
 class CharacterViewSet(_WorldScopedViewSet):
@@ -95,3 +96,13 @@ class CharacterViewSet(_WorldScopedViewSet):
             character.display_order = position
         Character.objects.bulk_update(ordered, ['display_order'])
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class RelationshipViewSet(_WorldScopedViewSet):
+    """
+    GET/POST /api/relationships/?world=ID e GET/PATCH/DELETE /api/relationships/{id}/.
+    Mesmas regras de acesso dos personagens. Não entra no log de atividade (são muitas e pequenas).
+    Excluir um personagem apaga as relações dele (CASCADE).
+    """
+
+    queryset = Relationship.objects.select_related('source', 'target')
+    serializer_class = RelationshipSerializer

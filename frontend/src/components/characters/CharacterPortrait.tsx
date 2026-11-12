@@ -15,9 +15,11 @@ interface CharacterPortraitProps {
   name: string;
   url: string;
   className?: string;
+  /** Tamanho do texto das iniciais (padrão grande, para os cards). */
+  initialsClassName?: string;
 }
 
-export function CharacterPortrait({ name, url, className }: CharacterPortraitProps) {
+export function CharacterPortrait({ name, url, className, initialsClassName = 'text-4xl' }: CharacterPortraitProps) {
   // Guarda a URL que falhou: se a URL mudar, a nova imagem volta a ser tentada
   const [failedUrl, setFailedUrl] = useState('');
   const showImage = url !== '' && failedUrl !== url;
@@ -39,7 +41,8 @@ export function CharacterPortrait({ name, url, className }: CharacterPortraitPro
     <div
       aria-hidden="true"
       className={cn(
-        'flex items-center justify-center bg-rpg-secondary/10 text-4xl font-bold text-rpg-secondary',
+        'flex items-center justify-center bg-rpg-secondary/10 font-bold text-rpg-secondary',
+        initialsClassName,
         className,
       )}
     >

@@ -11,11 +11,12 @@ O que há ali:
 - CharacterListSerializer: versão leve, só leitura, usada em GET /characters/?world=.
 """
 
+from django.db.models import Q
 from rest_framework import serializers
 
 from lore.timeline_serializers import _unique_tags, _WorldOwnershipMixin
 
-from .models import Character
+from .models import Character, Relationship
 
 
 def _tag_list(item_length, max_items):
@@ -66,3 +67,38 @@ class CharacterListSerializer(serializers.ModelSerializer):
             'role', 'race', 'classes', 'level', 'organizations', 'updated_at',
         ]
         read_only_fields = fields
+
+class RelationshipSerializer(_WorldOwnershipMixin, serializers.ModelSerializer):
+    """Relação entre dois personagens. As regras de duplicidade são checadas em validate()
+    (com mensagens em português), por isso os validadores automáticos ficam desligados."""
+
+    class Meta:
+        model = Relationship
+        fields = [
+            'id', 'world', 'source', 'target', 'kind', 'label', 'reverse_label',
+            'is_mutual', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['created_at', 'updated_at']
+        validators = []
+
+    def validate(self, attrs):
+        def pick(name):
+            return attrs.get(name, getattr(self.instance, name, None))
+
+        world, source, target, kind = pick('world'), pick('source'), pick('target'), pick('kind')
+
+        if source.id == target.id:
+            raise serializers.ValidationError({'target': 'Escolha dois personagens diferentes.'})
+        if source.world_id != world.id or target.world_id != world.id:
+            raise serializers.ValidationError('Os dois personagens precisam ser deste mundo.')
+
+        clash = Relationship.objects.filter(world=world, kind=kind).filter(
+            Q(source=source, target=target) | Q(source=target, target=source)
+        )
+        if self.instance:
+            clash = clash.exclude(pk=self.instance.pk)
+        if clash.exists():
+            raise serializers.ValidationError(
+                {'kind': 'Já existe uma relação deste tipo entre esses dois personagens.'}
+            )
+        return attrs
