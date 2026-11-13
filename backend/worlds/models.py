@@ -21,7 +21,7 @@ class World(models.Model):
         related_name='worlds'
     )
     name = models.CharField(max_length=100)
-    cover_image = models.URLField(blank=True, null=True) # Usando URL para prever o uso de Storage (Supabase/S3)
+    cover_image = models.URLField(max_length=500, blank=True, null=True)
     synopsis = models.TextField()
     introduction_markdown = models.TextField(blank=True, null=True)
     is_demo = models.BooleanField(default=False)

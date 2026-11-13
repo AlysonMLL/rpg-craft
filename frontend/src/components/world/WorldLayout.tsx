@@ -18,12 +18,13 @@ import { cn } from '../../lib/cn';
 import { Badge, Skeleton, toast } from '../ui';
 import { authService } from '../../api/auth';
 import { WorldTagsEditor } from './WorldTagsEditor';
+import { WorldCoverEditor } from './WorldCoverEditor';
 
 const TABS = [
-  { path: '', label: 'Visão geral', Icon: LayoutGrid },
-  { path: 'personagens', label: 'Personagens', Icon: Users },
-  { path: 'mapas', label: 'Mapas', Icon: MapIcon },
-  { path: 'racas-criaturas', label: 'Raças e Criaturas', Icon: PawPrint },
+  { path: '', label: 'Visão geral', Icon: LayoutGrid, soon: false },
+  { path: 'personagens', label: 'Personagens', Icon: Users, soon: false },
+  { path: 'mapas', label: 'Mapas', Icon: MapIcon, soon: true },
+  { path: 'racas-criaturas', label: 'Raças e Criaturas', Icon: PawPrint, soon: false },
 ];
 
 export default function WorldLayout() {
@@ -91,6 +92,11 @@ export default function WorldLayout() {
             Voltar
           </Link>
         </div>
+        {canEdit && (
+          <div className="absolute right-6 top-5 z-30 md:right-8">
+            <WorldCoverEditor world={world} onSaved={setWorld} />
+          </div>
+        )}
 
           <div className="relative z-20 mx-auto w-full max-w-7xl px-6 pb-5 pt-20 md:px-8">
           <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg md:text-5xl lg:text-6xl">
@@ -112,7 +118,7 @@ export default function WorldLayout() {
         className="sticky top-0 z-30 border-b border-gray-800 bg-rpg-bg/90 backdrop-blur"
       >
         <div className="mx-auto flex w-full max-w-7xl flex-wrap gap-x-6 px-6 md:px-8">
-          {TABS.map(({ path, label, Icon }) => (
+          {TABS.map(({ path, label, Icon, soon }) => (
             <NavLink
               key={label}
               to={path ? `${base}/${path}` : base}
@@ -128,6 +134,7 @@ export default function WorldLayout() {
             >
               <Icon size={16} aria-hidden="true" />
               {label}
+              {soon && <Badge variant="neutral">Em breve</Badge>}
             </NavLink>
           ))}
         </div>

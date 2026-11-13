@@ -26,6 +26,36 @@ import {
 import logoRpgCraft from '../../assets/logo_rpgcraft.png';
 import { authService } from '../../api/auth';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import type { LucideIcon } from 'lucide-react';
+import { Badge } from '../ui';
+
+/** Item de navegação que ainda não existe: não é link, só mostra o selo "Em breve". */
+function SoonItem({
+  Icon,
+  label,
+  isExpanded,
+  className = '',
+}: {
+  Icon: LucideIcon;
+  label: string;
+  isExpanded: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      title={`${label} (em breve)`}
+      className={`flex items-center rounded-lg font-medium text-rpg-subtle ${
+        isExpanded ? 'justify-between px-4 py-3' : 'mx-auto h-12 w-12 justify-center'
+      } ${className}`}
+    >
+      <div className="flex items-center gap-3">
+        <Icon size={20} className="shrink-0" aria-hidden="true" />
+        <span className={isExpanded ? 'animate-fade-in' : 'sr-only'}>{label}</span>
+      </div>
+      {isExpanded ? <Badge variant="neutral">Em breve</Badge> : <span className="sr-only">Em breve</span>}
+    </div>
+  );
+}
 
 export default function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -103,19 +133,12 @@ export default function Sidebar() {
             {isExpanded && <span className="animate-fade-in">Notebook</span>}
           </NavLink>
 
-          <NavLink to="/galeria" className={getLinkClass} title="Galeria">
-            <ImageIcon size={20} className="shrink-0" />
-            {isExpanded && <span className="animate-fade-in">Galeria</span>}
-          </NavLink>
-
-          <NavLink to="/perfil" className={getLinkClass} title="Perfil">
-            <User size={20} className="shrink-0" />
-            {isExpanded && <span className="animate-fade-in">Perfil</span>}
-          </NavLink>
+          <SoonItem Icon={ImageIcon} label="Galeria" isExpanded={isExpanded} className="opacity-60"/>
+          <SoonItem Icon={User} label="Perfil" isExpanded={isExpanded} className="opacity-60"/>
 
           {/* Item Desabilitado: Mestre IA */}
           <div
-            className={`flex items-center rounded-lg text-rpg-subtle cursor-not-allowed opacity-60 bg-rpg-card/30 border border-transparent transition-all mt-6 ${
+            className={`flex items-center rounded-lg text-rpg-subtle cursor-not-allowed opacity-60 bg-rpg-card/30 border border-transparent transition-all ${
               isExpanded ? 'justify-between px-4 py-3' : 'justify-center w-12 h-12 mx-auto'
             }`}
             title="Mestre IA (Em breve)"
