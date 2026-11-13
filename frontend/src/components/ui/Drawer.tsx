@@ -9,7 +9,7 @@
  *
  * Redimensionável (`resizable`): em telas >= 1024px aparece uma alça na borda; dá para arrastar,
  * usar as setas/Home/End do teclado ou clicar duas vezes para voltar ao padrão. Vai de
- * `minWidth` (420px) até 50% da tela e a largura escolhida fica no localStorage. Abaixo de
+ * `minWidth` (420px) até 60% da tela e a largura escolhida fica no localStorage. Abaixo de
  * 1024px (ou sem `resizable`) vale a largura fixa de `width`.
  *
  * O que há aqui:
@@ -21,7 +21,7 @@
  */
 import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent, PointerEvent, ReactNode } from 'react';
-import { X } from 'lucide-react';
+import { ChevronsLeftRight, X } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
 type Side = 'left' | 'right';
@@ -61,7 +61,7 @@ const widths: Record<Width, string> = {
 
 const CLOSE_DELAY_MS = 220;
 const RESIZE_MIN_VIEWPORT = 1024; // abaixo disso a gaveta usa a largura fixa (width)
-const RESIZE_MAX_RATIO = 0.5; // teto: metade da tela
+const RESIZE_MAX_RATIO = 0.6; // teto: 60% da tela
 const RESIZE_DEFAULT = 640;
 const RESIZE_MIN = 420;
 const KEY_STEP = 24;
@@ -269,6 +269,12 @@ export function Drawer({
                       : 'bg-transparent group-hover:bg-rpg-primary/60 group-focus-visible:bg-rpg-secondary',
                   )}
                 />
+                <span
+                  aria-hidden="true"
+                  className="absolute left-1/2 top-1/2 flex h-8 w-5 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-gray-600 bg-rpg-card text-rpg-muted shadow-sm"
+                >
+                  <ChevronsLeftRight size={14} />
+                </span>
               </div>
             )}
 

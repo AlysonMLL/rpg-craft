@@ -1,7 +1,7 @@
 /**
  * Função do Arquivo: Gaveta da ficha do personagem (aberta por ?personagem=ID). Busca a ficha
  * completa ao abrir. O cabeçalho traz as abas Ficha rápida | Ficha completa (a largura da
- * gaveta não muda entre elas; o painel é redimensionável até 50% da tela). Na Ficha rápida:
+ * gaveta não muda entre elas; o painel é redimensionável até 60% da tela). Na Ficha rápida:
  * retrato 3:4 ao lado de nome, status e endereço da imagem (com o botão "Enquadrar") e as seções
  * editáveis inline. Na Ficha completa: faixa compacta (miniatura, nome, status) e o editor
  * Markdown. A edição é inline para o dono (atualização otimista, com volta atrás e toast se a
