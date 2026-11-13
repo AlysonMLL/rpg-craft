@@ -22,6 +22,10 @@ import type {
   CharacterStatus,
 } from '../api/characters';
 
+import { distinctValues as distinct, getInitials, normalizeText as normalize } from './entityUtils';
+
+export { getInitials }; // quem já importa daqui continua funcionando
+
 type BadgeVariant = 'success' | 'danger' | 'highlight' | 'neutral';
 
 export const STATUS_ORDER: CharacterStatus[] = ['alive', 'dead', 'missing', 'unknown'];
@@ -35,19 +39,6 @@ export const STATUS_META: Record<CharacterStatus, { label: string; variant: Badg
   unknown: { label: 'Desconhecido', variant: 'neutral' },
 };
 
-/** Minúsculas e sem acentos, para comparar textos. */
-function normalize(text: string): string {
-  return text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
-}
-
-/** "Aria de Valoria" → "AV"; "Kael" → "KA". */
-export function getInitials(name: string): string {
-  const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return '?';
-  const letters =
-    words.length === 1 ? words[0].slice(0, 2) : words[0][0] + words[words.length - 1][0];
-  return letters.toLocaleUpperCase('pt-BR');
-}
 
 export function toListItem(character: Character): CharacterListItem {
   return {
@@ -141,15 +132,6 @@ export function hasActiveFilters(filters: CharacterFilters): boolean {
   );
 }
 
-/** Valores distintos (sem repetir "Elfo"/"elfo"), em ordem alfabética. */
-function distinct(values: string[]): string[] {
-  const seen = new Map<string, string>();
-  for (const value of values) {
-    const key = normalize(value);
-    if (key && !seen.has(key)) seen.set(key, value.trim());
-  }
-  return [...seen.values()].sort((a, b) => a.localeCompare(b, 'pt-BR'));
-}
 
 export function collectValues(list: CharacterListItem[], field: 'race' | 'role'): string[] {
   return distinct(list.map((character) => character[field]));

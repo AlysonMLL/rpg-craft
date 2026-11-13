@@ -35,7 +35,7 @@ import type { CharacterListItem } from '../../api/characters';
 import type { Relationship } from '../../api/relationships';
 import { cn } from '../../lib/cn';
 import { KIND_META, NODE_HEIGHT, NODE_WIDTH, edgeText, layoutGraph } from '../../lib/relationshipUtils';
-import { CharacterPortrait } from './CharacterPortrait';
+import { EntityImage } from '../ui'
 
 type CharacterNodeType = Node<{ character: CharacterListItem; focused: boolean }, 'character'>;
 
@@ -60,7 +60,7 @@ function CharacterNode({ data }: NodeProps<CharacterNodeType>) {
       )}
     >
       <Handle type="target" position={Position.Top} style={HIDDEN_HANDLE} />
-      <CharacterPortrait
+      <EntityImage
         name={character.name}
         url={character.portrait_url}
         initialsClassName="text-sm"

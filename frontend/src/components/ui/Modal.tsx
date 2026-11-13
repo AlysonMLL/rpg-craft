@@ -8,7 +8,6 @@ import { useEffect, useId, useRef, } from 'react';
 import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '../../lib/cn';
-import Cropper from 'react-easy-crop';
 import 'react-easy-crop/react-easy-crop.css';
 
 type Size = 'sm' | 'md' | 'lg' | 'xl';

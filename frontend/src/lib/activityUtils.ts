@@ -1,5 +1,5 @@
 /** Ícones, textos e links da atividade recente. */
-import { CalendarClock, CheckSquare, FileText, ScrollText, Globe, StickyNote, Users, type LucideIcon } from 'lucide-react';
+import { CalendarClock, CheckSquare, FileText, ScrollText, Globe, StickyNote, Dna, PawPrint, Users, type LucideIcon } from 'lucide-react';
 import type { Activity, ActivityTargetType, ActivityVerb } from '../api/activity';
 import type { DocumentSection } from '../api/documents';
 
@@ -19,6 +19,8 @@ export const TARGET_META: Record<ActivityTargetType, TargetMeta> = {
   event: { label: 'Evento', Icon: CalendarClock, tone: 'bg-slate-400/10 text-slate-300', feminine: false },
   quest: { label: 'Missão', Icon: ScrollText, tone: 'bg-amber-400/10 text-amber-300', feminine: true },
   character: { label: 'Personagem', Icon: Users, tone: 'bg-rpg-secondary/10 text-rpg-secondary', feminine: false },
+  race: { label: 'Raça', Icon: Dna, tone: 'bg-teal-400/10 text-teal-300', feminine: true },
+  creature: { label: 'Criatura', Icon: PawPrint, tone: 'bg-rose-400/10 text-rose-300', feminine: true },
 };
 
 const VERBS: Record<ActivityVerb, [string, string]> = {
@@ -45,25 +47,37 @@ export function verbLabel(activity: Activity): string {
 export function activityLink(activity: Activity): string | null {
   if (activity.target_deleted) return null;
   switch (activity.target_type) {
+    
     case 'world':
       return `/world/${activity.target_id}`;
+    
     case 'note':
       return `/notebook?aba=notas&nota=${activity.target_id}`;
+    
     case 'todo':
       return '/notebook?aba=tarefas';
-    case 'document':
-      // Abre a gaveta do documento na Visão geral do mundo (o mundo pode ter sido excluído)
-      return activity.world ? `/world/${activity.world}?documento=${activity.target_id}` : null;
+
     case 'event':
       return activity.world ? `/world/${activity.world}#linha-do-tempo` : null;
+    
     case 'character':
       return activity.world ? `/world/${activity.world}/personagens?personagem=${activity.target_id}` : null;
+
     case 'document': {
       // Abre a gaveta do documento na página da seção (o mundo pode ter sido excluído)
       if (!activity.world) return null;
       const path = DOCUMENT_PATHS[activity.target_section ?? 'lore'];
       return `/world/${activity.world}${path}?documento=${activity.target_id}`;
     }
+
+    case 'race':
+      return activity.world ? `/world/${activity.world}/racas-criaturas?raca=${activity.target_id}` : null;
+
+    case 'creature':
+      return activity.world
+        ? `/world/${activity.world}/racas-criaturas?aba=criaturas&criatura=${activity.target_id}`
+        : null;
+        
     default:
       return null;
   }

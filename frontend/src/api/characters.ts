@@ -15,13 +15,10 @@ import { apiClient } from './client';
 
 export type CharacterStatus = 'alive' | 'dead' | 'missing' | 'unknown';
 
-/** Parte da imagem que aparece no retrato, em % da imagem original (origem no canto superior esquerdo). */
-export interface PortraitCrop {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+import type { ImageCrop } from './common';
+
+/** Mantido para o código de Personagens; é o mesmo ImageCrop. */
+export type PortraitCrop = ImageCrop;
 
 export interface CharacterListItem {
   id: number;

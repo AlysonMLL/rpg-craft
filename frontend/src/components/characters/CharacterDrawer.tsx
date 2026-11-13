@@ -26,7 +26,13 @@ import {
   type CharacterStatus,
   type CharacterUpdateData,
 } from '../../api/characters';
-import { STATUS_META, STATUS_ORDER, collectTags, toListItem } from '../../lib/characterUtils';
+import {
+  PORTRAIT_ASPECT,
+  STATUS_META,
+  STATUS_ORDER,
+  collectTags,
+  toListItem,
+} from '../../lib/characterUtils';
 import { cn } from '../../lib/cn';
 import { downloadMarkdown } from '../../lib/markdownFile';
 import {
@@ -34,6 +40,8 @@ import {
   Button,
   Drawer,
   EmptyState,
+  EntityImage,
+  ImageCropModal,
   InlineNumber,
   InlineSelect,
   InlineTags,
@@ -44,10 +52,8 @@ import {
   Tabs,
   toast,
 } from '../ui';
-import { CharacterPortrait } from './CharacterPortrait';
 import { CharacterSecrets } from './CharacterSecrets';
 import { CharacterSheetTab } from './CharacterSheetTab';
-import { PortraitCropModal } from './PortraitCropModal';
 
 const FIELD = 'block px-2 py-1 text-gray-200';
 const STATUS_OPTIONS = STATUS_ORDER.map((value) => ({ value, label: STATUS_META[value].label }));
@@ -354,10 +360,11 @@ export function CharacterDrawer({
           <div className="space-y-6">
             {quick ? (
               <div className="flex flex-col gap-4 sm:flex-row sm:gap-5">
-                <CharacterPortrait
+                <EntityImage
                   name={current.name}
                   url={current.portrait_url}
                   crop={current.portrait_crop}
+                  expandable
                   initialsClassName="text-5xl"
                   className="aspect-[3/4] w-40 shrink-0 rounded-xl sm:w-44"
                 />
@@ -391,7 +398,7 @@ export function CharacterDrawer({
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <CharacterPortrait
+                <EntityImage
                   name={current.name}
                   url={current.portrait_url}
                   crop={current.portrait_crop}
@@ -440,9 +447,11 @@ export function CharacterDrawer({
         )}
       </Drawer>
 
-      <PortraitCropModal
+      <ImageCropModal
         open={cropping && current !== null && current.portrait_url !== ''}
         imageUrl={current?.portrait_url ?? ''}
+        aspect={PORTRAIT_ASPECT}
+        title="Enquadrar retrato"
         initialCrop={current?.portrait_crop ?? null}
         onSave={(crop) => void save({ portrait_crop: crop })}
         onClose={() => setCropping(false)}

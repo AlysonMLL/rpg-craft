@@ -9,7 +9,7 @@ import { apiClient } from './client';
 import type { DocumentSection } from './documents';
 
 export type ActivityVerb = 'created' | 'updated' | 'deleted';
-export type ActivityTargetType = 'world' | 'note' | 'todo' | 'document' | 'event' | 'quest' | 'character';
+export type ActivityTargetType = 'world' | 'note' | 'todo' | 'document' | 'event' | 'quest' | 'character' | 'race' | 'creature';
 
 
 export interface Activity {

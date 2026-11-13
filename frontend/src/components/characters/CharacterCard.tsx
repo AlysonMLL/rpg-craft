@@ -16,7 +16,7 @@ import type { CharacterListItem } from '../../api/characters';
 import { STATUS_META } from '../../lib/characterUtils';
 import { cn } from '../../lib/cn';
 import { Badge, Card } from '../ui';
-import { CharacterPortrait } from './CharacterPortrait';
+import { EntityImage } from '../ui'
 
 interface CharacterCardProps {
   character: CharacterListItem;
@@ -56,7 +56,7 @@ export function CharacterCard({
       )}
     >
       <div className="relative">
-        <CharacterPortrait
+        <EntityImage
           name={character.name}
           url={character.portrait_url}
           crop={character.portrait_crop}

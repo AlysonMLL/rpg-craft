@@ -19,3 +19,6 @@ export { Toaster, toast } from './Toaster';
 export { ConfirmDialog } from './ConfirmDialog';
 export { SortableGrid } from './SortableGrid';
 export { InlineNumber, InlineSelect, InlineTags, InlineTextarea } from './InlineFields';
+export { EntityImage } from './EntityImage';
+export { ImageLightbox } from './ImageLightbox';
+export { ImageCropModal } from './ImageCropModal';
