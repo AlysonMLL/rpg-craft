@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'gallery',
     'maps',
     'activity',
+    'peoples',
 ]
 
 MIDDLEWARE = [

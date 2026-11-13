@@ -23,6 +23,8 @@ class Activity(models.Model):
         EVENT = 'event', 'Evento'
         QUEST = 'quest', 'Missão'
         CHARACTER = 'character', 'Personagem'
+        RACE = 'race', 'Raça'
+        CREATURE = 'creature', 'Criatura'
         
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='activities'

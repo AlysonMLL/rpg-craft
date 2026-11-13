@@ -10,26 +10,27 @@ from rest_framework import permissions, viewsets
 
 from activity.models import Activity
 from activity.services import log_activity
+from worlds.scoped import ImageCropMixin, WorldScopedViewSet as _WorldScopedViewSet  # noqa: F401  (quest_views importa daqui)
 
 from .models import Era, TimelineEvent
-from .permissions import IsWorldOwnerOrReadOnly
 from .timeline_serializers import EraSerializer, TimelineEventSerializer
+# from .permissions import IsWorldOwnerOrReadOnly
 
 
-class _WorldScopedViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsWorldOwnerOrReadOnly]
+# class _WorldScopedViewSet(viewsets.ModelViewSet):
+#     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsWorldOwnerOrReadOnly]
 
-    def get_queryset(self):
-        queryset = super().get_queryset().select_related('world')
-        user = self.request.user
-        if user.is_authenticated:
-            queryset = queryset.filter(Q(world__owner=user) | Q(world__is_demo=True))
-        else:
-            queryset = queryset.filter(world__is_demo=True)
-        world = self.request.query_params.get('world')
-        if world and world.isdigit():
-            queryset = queryset.filter(world_id=int(world))
-        return queryset
+#     def get_queryset(self):
+#         queryset = super().get_queryset().select_related('world')
+#         user = self.request.user
+#         if user.is_authenticated:
+#             queryset = queryset.filter(Q(world__owner=user) | Q(world__is_demo=True))
+#         else:
+#             queryset = queryset.filter(world__is_demo=True)
+#         world = self.request.query_params.get('world')
+#         if world and world.isdigit():
+#             queryset = queryset.filter(world_id=int(world))
+#         return queryset
 
 
 class TimelineEventViewSet(_WorldScopedViewSet):

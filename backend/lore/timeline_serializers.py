@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from worlds.scoped import WorldOwnershipMixin as _WorldOwnershipMixin  # noqa: F401
+from worlds.scoped import unique_tags as _unique_tags  # noqa: F401
 
 from .models import Era, TimelineEvent
 
@@ -6,24 +8,24 @@ from .models import Era, TimelineEvent
 class _WorldOwnershipMixin:
     """Só permite criar no próprio mundo e não deixa mover para outro mundo."""
 
-    def validate_world(self, world):
-        request = self.context.get('request')
-        if request and world.owner_id != request.user.id:
-            raise serializers.ValidationError('Este mundo não é seu.')
-        if self.instance and self.instance.world_id != world.id:
-            raise serializers.ValidationError('Não é possível mover para outro mundo.')
-        return world
+    # def validate_world(self, world):
+    #     request = self.context.get('request')
+    #     if request and world.owner_id != request.user.id:
+    #         raise serializers.ValidationError('Este mundo não é seu.')
+    #     if self.instance and self.instance.world_id != world.id:
+    #         raise serializers.ValidationError('Não é possível mover para outro mundo.')
+    #     return world
 
 
-def _unique_tags(tags):
-    """Tira repetidas (sem diferenciar maiúsculas) mantendo a primeira grafia e a ordem."""
-    seen, result = set(), []
-    for tag in tags:
-        tag = ' '.join(tag.split())
-        if tag and tag.casefold() not in seen:
-            seen.add(tag.casefold())
-            result.append(tag)
-    return result
+# def _unique_tags(tags):
+#     """Tira repetidas (sem diferenciar maiúsculas) mantendo a primeira grafia e a ordem."""
+#     seen, result = set(), []
+#     for tag in tags:
+#         tag = ' '.join(tag.split())
+#         if tag and tag.casefold() not in seen:
+#             seen.add(tag.casefold())
+#             result.append(tag)
+#     return result
 
 
 class TimelineEventSerializer(_WorldOwnershipMixin, serializers.ModelSerializer):

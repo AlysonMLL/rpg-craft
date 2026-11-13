@@ -14,7 +14,7 @@ O que há ali:
 from django.db.models import Q
 from rest_framework import serializers
 
-from lore.timeline_serializers import _unique_tags, _WorldOwnershipMixin
+from worlds.scoped import ImageCropMixin, WorldOwnershipMixin, clean_crop, unique_tags
 
 from .models import Character, Relationship
 
@@ -25,7 +25,9 @@ def _tag_list(item_length, max_items):
     )
 
 
-class CharacterSerializer(_WorldOwnershipMixin, serializers.ModelSerializer):
+class CharacterSerializer(ImageCropMixin, WorldOwnershipMixin, serializers.ModelSerializer):
+    image_url_field = 'portrait_url'
+    image_crop_field = 'portrait_crop'
     classes = _tag_list(40, 20)
     organizations = _tag_list(60, 20)
     items = _tag_list(80, 60)
@@ -45,45 +47,48 @@ class CharacterSerializer(_WorldOwnershipMixin, serializers.ModelSerializer):
         extra_kwargs = {'level': {'min_value': 0, 'max_value': 999}}
 
     def validate_classes(self, value):
-        return _unique_tags(value)
+        return unique_tags(value)
 
     def validate_organizations(self, value):
-        return _unique_tags(value)
+        return unique_tags(value)
 
     def validate_items(self, value):
-        return _unique_tags(value)
+        return unique_tags(value)
 
     def validate_skills(self, value):
-        return _unique_tags(value)
+        return unique_tags(value)
+
+    # def validate_portrait_crop(self, value):
+    #     if value is None:
+    #         return None
+    #     keys = {'x', 'y', 'width', 'height'}
+    #     if not isinstance(value, dict) or set(value) != keys:
+    #         raise serializers.ValidationError('Envie x, y, width e height (em porcentagem).')
+    #     numbers = {}
+    #     for key in keys:
+    #         number = value[key]
+    #         if isinstance(number, bool) or not isinstance(number, (int, float)):
+    #             raise serializers.ValidationError('Os valores do enquadramento precisam ser números.')
+    #         numbers[key] = round(float(number), 2)
+    #     inside = (
+    #         numbers['x'] >= 0 and numbers['y'] >= 0
+    #         and numbers['width'] >= 1 and numbers['height'] >= 1
+    #         and numbers['x'] + numbers['width'] <= 100.5
+    #         and numbers['y'] + numbers['height'] <= 100.5
+    #     )
+    #     if not inside:
+    #         raise serializers.ValidationError('O enquadramento precisa estar dentro da imagem.')
+    #     return numbers
+
+    # def update(self, instance, validated_data):
+    #     # Trocou a URL sem mandar um enquadramento novo: o antigo não vale mais
+    #     new_url = validated_data.get('portrait_url')
+    #     if new_url is not None and new_url != instance.portrait_url and 'portrait_crop' not in validated_data:
+    #         validated_data['portrait_crop'] = None
+    #     return super().update(instance, validated_data)
 
     def validate_portrait_crop(self, value):
-        if value is None:
-            return None
-        keys = {'x', 'y', 'width', 'height'}
-        if not isinstance(value, dict) or set(value) != keys:
-            raise serializers.ValidationError('Envie x, y, width e height (em porcentagem).')
-        numbers = {}
-        for key in keys:
-            number = value[key]
-            if isinstance(number, bool) or not isinstance(number, (int, float)):
-                raise serializers.ValidationError('Os valores do enquadramento precisam ser números.')
-            numbers[key] = round(float(number), 2)
-        inside = (
-            numbers['x'] >= 0 and numbers['y'] >= 0
-            and numbers['width'] >= 1 and numbers['height'] >= 1
-            and numbers['x'] + numbers['width'] <= 100.5
-            and numbers['y'] + numbers['height'] <= 100.5
-        )
-        if not inside:
-            raise serializers.ValidationError('O enquadramento precisa estar dentro da imagem.')
-        return numbers
-
-    def update(self, instance, validated_data):
-        # Trocou a URL sem mandar um enquadramento novo: o antigo não vale mais
-        new_url = validated_data.get('portrait_url')
-        if new_url is not None and new_url != instance.portrait_url and 'portrait_crop' not in validated_data:
-            validated_data['portrait_crop'] = None
-        return super().update(instance, validated_data)
+        return clean_crop(value)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -104,7 +109,7 @@ class CharacterListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
-class RelationshipSerializer(_WorldOwnershipMixin, serializers.ModelSerializer):
+class RelationshipSerializer(WorldOwnershipMixin, serializers.ModelSerializer):
     """Relação entre dois personagens. As regras de duplicidade são checadas em validate()
     (com mensagens em português), por isso os validadores automáticos ficam desligados."""
 
