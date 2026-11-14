@@ -22,6 +22,9 @@ class WorldSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(source='owner.username', read_only=True)
     # True quando o mundo pertence a quem fez a requisição (false para visitantes)
     is_owner = serializers.SerializerMethodField()
+    characters_count = serializers.SerializerMethodField()
+    races_count = serializers.SerializerMethodField()
+    creatures_count = serializers.SerializerMethodField()
 
     class Meta:
         model = World
@@ -45,6 +48,10 @@ class WorldSerializer(serializers.ModelSerializer):
             'is_owner',
             'tags',
             'tag_ids',
+            'characters_count',
+            'races_count',
+            'creatures_count',
+            'is_owner',
         ]
         # A ordem só muda pelo endpoint /worlds/reorder/ e a atividade pelo log
         read_only_fields = ['display_order', 'updated_at', 'last_activity_at']
@@ -56,3 +63,16 @@ class WorldSerializer(serializers.ModelSerializer):
             and request.user.is_authenticated
             and obj.owner_id == request.user.id
         )
+
+    def _count(self, obj, annotated, related):
+        value = getattr(obj, annotated, None)  # vem da listagem/detalhe (subconsulta)
+        return value if value is not None else getattr(obj, related).count()
+
+    def get_characters_count(self, obj):
+        return self._count(obj, 'characters_count', 'characters')
+
+    def get_races_count(self, obj):
+        return self._count(obj, 'races_count', 'races')
+
+    def get_creatures_count(self, obj):
+        return self._count(obj, 'creatures_count', 'creatures')

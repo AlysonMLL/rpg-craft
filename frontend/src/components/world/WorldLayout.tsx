@@ -23,8 +23,8 @@ import { WorldCoverEditor } from './WorldCoverEditor';
 const TABS = [
   { path: '', label: 'Visão geral', Icon: LayoutGrid, soon: false },
   { path: 'personagens', label: 'Personagens', Icon: Users, soon: false },
-  { path: 'mapas', label: 'Mapas', Icon: MapIcon, soon: true },
   { path: 'racas-criaturas', label: 'Raças e Criaturas', Icon: PawPrint, soon: false },
+  { path: 'mapas', label: 'Mapas', Icon: MapIcon, soon: true },
 ];
 
 export default function WorldLayout() {

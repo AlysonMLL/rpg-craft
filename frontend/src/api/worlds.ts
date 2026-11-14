@@ -35,6 +35,10 @@ export interface World {
   owner_name: string;
   is_owner: boolean;
   tags: Tag[];
+  characters_count: number;
+  races_count: number;
+  creatures_count: number;
+
 }
 
 export interface WorldCreateData {

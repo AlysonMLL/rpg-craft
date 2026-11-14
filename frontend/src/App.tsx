@@ -26,6 +26,7 @@ import WorldSectionPlaceholder from './pages/WorldSectionPlaceholder';
 import Worlds from './pages/Worlds';
 import Notebook from './pages/Notebook';
 import Characters from './pages/Characters';
+import Peoples from './pages/Peoples';
 import { Toaster } from './components/ui';
 
 // Página de estilo (opcional, só em dev)
@@ -75,16 +76,7 @@ export default function App() {
                 />
               }
             />
-            <Route
-              path="racas-criaturas"
-              element={
-                <WorldSectionPlaceholder
-                  title="Raças e Criaturas"
-                  description="Os povos e os seres do mundo, com perigo, nível e onde são comuns."
-                  Icon={PawPrint}
-                />
-              }
-            />
+            <Route path="racas-criaturas" element={<Peoples />} />
           </Route>
           <Route path="mundos" element={<Worlds />} />
           <Route path="notebook" element={<Notebook />} />

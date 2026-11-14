@@ -18,7 +18,8 @@ contexto de autenticação antes de passar os dados para os serializers.
 """
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, IntegerField, OuterRef, Q, Subquery
+from django.db.models.functions import Coalesce
 from django.utils.text import slugify
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -30,6 +31,9 @@ from activity.services import log_activity
 from .models import World, Tag
 from .permissions import IsOwnerOrReadOnly
 from .serializers import WorldSerializer, TagSerializer
+from characters.models import Character
+from peoples.models import Creature, Race
+
 
 
 class TagViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
@@ -65,16 +69,38 @@ class WorldViewSet(viewsets.ModelViewSet):
     # Visitante só lê; para escrever é preciso estar logado E ser o dono do mundo
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
+    @staticmethod
+    def _count_of(model):
+        """Conta os itens do mundo por subconsulta (vários Count com JOIN multiplicariam as linhas)."""
+        return Coalesce(
+            Subquery(
+                model.objects.filter(world=OuterRef('pk'))
+                .order_by()
+                .values('world')
+                .annotate(total=Count('pk'))
+                .values('total'),
+                output_field=IntegerField(),
+            ),
+            0,
+        )
+    
     def get_queryset(self):
-        user = self.request.user
-        queryset = World.objects.prefetch_related('tags').select_related('owner')
+        queryset = (
+            World.objects.prefetch_related('tags')
+            .select_related('owner')
+            .annotate(
+                characters_count=self._count_of(Character),
+                races_count=self._count_of(Race),
+                creatures_count=self._count_of(Creature),
+            )
+        )
 
         # Modo convidado (sem token): apenas mundos de demonstração pública
-        if not user.is_authenticated:
+        if not self.request.user.is_authenticated:
             return queryset.filter(is_demo=True)
 
         # Logado: os próprios mundos OU os mundos de demonstração pública
-        return queryset.filter(Q(owner=user) | Q(is_demo=True)).distinct()
+        return queryset.filter(Q(owner=self.request.user) | Q(is_demo=True)).distinct()
 
     def perform_create(self, serializer):
         # Quando o frontend manda um POST para criar um RPG, o Django atrela o dono automaticamente
@@ -100,6 +126,8 @@ class WorldViewSet(viewsets.ModelViewSet):
             owner=owner, verb=Activity.Verb.DELETED, target_type=Activity.Target.WORLD,
             target_id=world_id, label=name, world=None,
         )
+
+    
 
     @action(detail=False, methods=['post'], url_path='reorder')
     def reorder(self, request):

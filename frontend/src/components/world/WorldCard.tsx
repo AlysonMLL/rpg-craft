@@ -11,7 +11,8 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Clock, GripVertical, MapPin, Star, Users } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { Clock, GripVertical, MapPin, Star, Users, Dna, PawPrint } from 'lucide-react';
 import type { World } from '../../api/worlds';
 import { coverGradient } from '../../lib/worldUtils';
 import { cn } from '../../lib/cn';
@@ -25,6 +26,17 @@ interface WorldCardProps {
   lifted?: boolean;
   /** O card de origem enquanto outro está sendo arrastado */
   dragging?: boolean;
+}
+
+/** Contador do rodapé do card: ícone + número, com o nome para leitores de tela. */
+function Stat({ Icon, label, value }: { Icon: LucideIcon; label: string; value: number }) {
+  return (
+    <span className="flex items-center gap-1" title={`${label}: ${value}`}>
+      <Icon size={12} aria-hidden="true" />
+      <span className="sr-only">{label}: </span>
+      {value}
+    </span>
+  );
 }
 
 export default function WorldCard({
@@ -116,12 +128,11 @@ export default function WorldCard({
         <div className="mt-auto flex items-center justify-between border-t border-gray-800/60 pt-4 text-xs text-rpg-subtle">
           <div className="flex items-center gap-3">
             {/* Contadores reais virão com os apps de personagens e locais */}
-            <span className="flex items-center gap-1" title="Personagens">
-              <Users size={12} aria-hidden="true" /> --
-            </span>
-            <span className="flex items-center gap-1" title="Locais">
-              <MapPin size={12} aria-hidden="true" /> --
-            </span>
+            <Stat Icon={Users} label="Personagens" value={world.characters_count} />
+            <Stat Icon={Dna} label="Raças" value={world.races_count} />
+            <Stat Icon={PawPrint} label="Criaturas" value={world.creatures_count} />
+            {/* <Stat Icon={MapPin} label="Locais" value={world.locations_count} /> */}
+
           </div>
           <span className="flex items-center gap-1">
             <Clock size={12} aria-hidden="true" />
