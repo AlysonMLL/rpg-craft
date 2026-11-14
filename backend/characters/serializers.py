@@ -14,7 +14,9 @@ O que há ali:
 from django.db.models import Q
 from rest_framework import serializers
 
-from worlds.scoped import ImageCropMixin, WorldOwnershipMixin, clean_crop, unique_tags
+from worlds.scoped import (
+    ImageCropMixin, OwnerOnlyFieldsMixin, WorldOwnershipMixin, clean_crop, unique_tags,
+)
 
 from .models import Character, Relationship
 
@@ -25,7 +27,8 @@ def _tag_list(item_length, max_items):
     )
 
 
-class CharacterSerializer(ImageCropMixin, WorldOwnershipMixin, serializers.ModelSerializer):
+class CharacterSerializer(OwnerOnlyFieldsMixin, ImageCropMixin, WorldOwnershipMixin, serializers.ModelSerializer):
+    owner_only_fields = ('secrets',)
     image_url_field = 'portrait_url'
     image_crop_field = 'portrait_crop'
     classes = _tag_list(40, 20)

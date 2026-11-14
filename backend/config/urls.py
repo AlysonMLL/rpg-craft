@@ -16,9 +16,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from accounts.views import HealthView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/health/', HealthView.as_view(), name='health'),
     path('api/', include('worlds.urls')), # rota base para api
     path('api/', include('notebook.urls')), # notas e tarefas
     path('api/', include('activity.urls')), # log de atividade

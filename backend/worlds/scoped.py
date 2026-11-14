@@ -50,6 +50,29 @@ def unique_tags(tags):
             result.append(tag)
     return result
 
+def viewer_is_owner(context, world):
+    """True se quem faz a requisição é o dono do mundo (visitante e outros logados: False)."""
+    request = context.get('request')
+    user = getattr(request, 'user', None)
+    return bool(user and user.is_authenticated and user.id == world.owner_id)
+
+
+class OwnerOnlyFieldsMixin:
+    """
+    Esvazia, para quem não é dono do mundo, os campos listados em owner_only_fields (ex.: segredos
+    do mestre). O blur da interface é só visual: sem isto o texto vai no JSON para qualquer
+    visitante de mundo demo. Deve vir ANTES dos outros mixins na lista de bases.
+    """
+
+    owner_only_fields = ()
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if not viewer_is_owner(self.context, instance.world):
+            for name in self.owner_only_fields:
+                if name in data:
+                    data[name] = ''
+        return data
 
 def tag_list(item_length, max_items):
     return serializers.ListField(

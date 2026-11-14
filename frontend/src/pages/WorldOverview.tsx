@@ -59,13 +59,7 @@ const PORTALS: Portal[] = [
     Icon: Users,
     tone: 'text-rpg-secondary',
   },
-  {
-    path: 'mapas',
-    title: 'Mapas',
-    description: 'Mapas interativos, locais e organizações.',
-    Icon: MapIcon,
-    tone: 'text-green-400',
-  },
+
   {
     path: 'racas-criaturas',
     title: 'Raças e Criaturas',
@@ -73,6 +67,15 @@ const PORTALS: Portal[] = [
     Icon: PawPrint,
     tone: 'text-purple-400',
   },
+
+  {
+    path: 'mapas',
+    title: 'Mapas',
+    description: 'Mapas interativos, locais e organizações.',
+    Icon: MapIcon,
+    tone: 'text-green-400',
+  },
+  
 ];
 
 export default function WorldOverview() {
@@ -154,7 +157,7 @@ export default function WorldOverview() {
                         {title}
                       </Link>
                     </h3>
-                    <Badge variant="neutral">Em breve</Badge>
+                    {/* <Badge variant="neutral">Em breve</Badge> */}
                   </div>
                   <p className="text-sm text-rpg-muted">{description}</p>
                   <span className="mt-auto inline-flex items-center gap-1 pt-2 text-sm font-bold text-rpg-primary">

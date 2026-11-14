@@ -32,6 +32,9 @@ from .timeline_serializers import EraSerializer, TimelineEventSerializer
 #             queryset = queryset.filter(world_id=int(world))
 #         return queryset
 
+def _event_label(event):
+    """Evento secreto não revela o título no feed de atividade (visitantes de mundo demo o leem)."""
+    return 'Evento secreto' if event.is_secret else event.title
 
 class TimelineEventViewSet(_WorldScopedViewSet):
     queryset = TimelineEvent.objects.all()
@@ -40,7 +43,7 @@ class TimelineEventViewSet(_WorldScopedViewSet):
     def _log(self, verb, event):
         log_activity(
             owner=event.world.owner, verb=verb, target_type=Activity.Target.EVENT,
-            target_id=event.id, label=event.title, world=event.world,
+            target_id=event.id, label=_event_label(event), world=event.world,
         )
 
     def perform_create(self, serializer):
@@ -50,11 +53,11 @@ class TimelineEventViewSet(_WorldScopedViewSet):
         self._log(Activity.Verb.UPDATED, serializer.save())
 
     def perform_destroy(self, instance):
-        owner, event_id, title, world = instance.world.owner, instance.id, instance.title, instance.world
+        owner, event_id, label, world = instance.world.owner, instance.id, _event_label(instance), instance.world
         instance.delete()
         log_activity(
             owner=owner, verb=Activity.Verb.DELETED, target_type=Activity.Target.EVENT,
-            target_id=event_id, label=title, world=world,
+            target_id=event_id, label=label, world=world,
         )
 
 

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from worlds.scoped import WorldOwnershipMixin as _WorldOwnershipMixin  # noqa: F401
 from worlds.scoped import unique_tags as _unique_tags  # noqa: F401
+from worlds.scoped import viewer_is_owner
 
 from .models import Era, TimelineEvent
 
@@ -60,6 +61,13 @@ class TimelineEventSerializer(_WorldOwnershipMixin, serializers.ModelSerializer)
         if day is not None and month is None:
             raise serializers.ValidationError({'day': 'Informe o mês antes do dia.'})
         return attrs
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Evento "só do mestre": quem não é dono não recebe o conteúdo (o blur é só visual)
+        if instance.is_secret and not viewer_is_owner(self.context, instance.world):
+            data.update(title='Evento secreto', description='', characters=[], locations=[])
+        return data
 
 
 class EraSerializer(_WorldOwnershipMixin, serializers.ModelSerializer):
