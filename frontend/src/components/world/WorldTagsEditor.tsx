@@ -1,20 +1,22 @@
 /**
- * Função do Arquivo: Botão "+ Tag" da capa do mundo e o modal "Tags do mundo". No modal o
- * dono marca/desmarca as tags existentes e cria tags novas (se o nome já existir, o backend
- * devolve a existente). Nada é gravado até "Salvar tags", que envia a lista final de uma vez.
+ * Função do Arquivo: Botão "+ Tag" da capa do mundo e o modal "Tags do mundo". No modal o dono
+ * marca/desmarca as tags existentes e cria tags novas (se o nome já existir, o backend devolve
+ * a existente). Nada é gravado até "Salvar tags", que envia a lista final de uma vez. Também
+ * dá para EXCLUIR tags ("Gerenciar tags"): a tag é global, então some de todos os mundos que a
+ * usam (a confirmação mostra em quantos) e a exclusão acontece na hora, sem "Desfazer".
  * Só renderize para o dono (a capa decide).
  *
  * O que há ali:
  * - WorldTagsEditor: botão + modal (props: world, onSaved). onSaved recebe o mundo atualizado.
- * - TagsForm (interno): carrega todas as tags, controla a seleção, a criação e o salvamento.
+ * - TagsForm (interno): carrega as tags, controla seleção, criação, exclusão e salvamento.
  *   Fica dentro do Modal, então reinicia a cada abertura.
  */
 
 import { useEffect, useState } from 'react';
-import { Check, Plus, Tags as TagsIcon } from 'lucide-react';
+import { Check, Plus, Tags as TagsIcon, Trash2 } from 'lucide-react';
 import { worldService, type Tag, type World } from '../../api/worlds';
 import { cn } from '../../lib/cn';
-import { Button, Input, Modal, Skeleton, toast } from '../ui';
+import { Button, ConfirmDialog, Input, Modal, Skeleton, toast } from '../ui';
 
 interface WorldTagsEditorProps {
   world: World;
@@ -34,6 +36,8 @@ function TagsForm({ world, onSaved, onClose }: TagsFormProps) {
   const [draft, setDraft] = useState('');
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [managing, setManaging] = useState(false);
+  const [toDelete, setToDelete] = useState<Tag | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -72,6 +76,23 @@ function TagsForm({ world, onSaved, onClose }: TagsFormProps) {
     }
   };
 
+  const deleteTag = async (tag: Tag) => {
+    try {
+      await worldService.deleteTag(tag.id);
+    } catch {
+      toast.error('Não foi possível excluir a tag. Tente de novo.');
+      return;
+    }
+    setAvailable((previous) => previous.filter((item) => item.id !== tag.id));
+    setSelected((previous) => previous.filter((id) => id !== tag.id));
+    toast.success('Tag excluída');
+    try {
+      onSaved(await worldService.getWorldById(world.id)); // a capa mostra as tags atuais
+    } catch {
+      // o mundo se atualiza na próxima vez que for carregado
+    }
+  };
+
   const save = async () => {
     setSaving(true);
     try {
@@ -87,11 +108,28 @@ function TagsForm({ world, onSaved, onClose }: TagsFormProps) {
   };
 
   const sorted = [...available].sort(byName);
+  const usage = toDelete?.worlds_count;
 
   return (
     <div className="space-y-6">
       <div>
-        <p className="mb-2 text-sm font-medium text-rpg-muted">Marque as tags deste mundo</p>
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <p className="text-sm font-medium text-rpg-muted">
+            {managing ? 'Escolha uma tag para excluir' : 'Marque as tags deste mundo'}
+          </p>
+          {sorted.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-pressed={managing}
+              leftIcon={<Trash2 size={14} aria-hidden="true" />}
+              onClick={() => setManaging((value) => !value)}
+            >
+              {managing ? 'Concluir' : 'Gerenciar'}
+            </Button>
+          )}
+        </div>
+
         {loading ? (
           <div className="flex flex-wrap gap-2" aria-busy="true">
             {[0, 1, 2, 3].map((i) => (
@@ -104,6 +142,20 @@ function TagsForm({ world, onSaved, onClose }: TagsFormProps) {
           <div className="flex flex-wrap gap-2">
             {sorted.map((tag) => {
               const on = selected.includes(tag.id);
+              if (managing) {
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    aria-label={`Excluir a tag ${tag.name}`}
+                    onClick={() => setToDelete(tag)}
+                    className="inline-flex min-h-8 items-center gap-1.5 rounded border border-gray-700 bg-rpg-bg px-3 py-1 text-xs font-bold text-rpg-muted transition-colors hover:border-red-400/60 hover:text-rpg-danger"
+                  >
+                    <Trash2 size={12} aria-hidden="true" />
+                    {tag.name}
+                  </button>
+                );
+              }
               return (
                 <button
                   key={tag.id}
@@ -161,6 +213,23 @@ function TagsForm({ world, onSaved, onClose }: TagsFormProps) {
           Salvar tags
         </Button>
       </div>
+
+      <ConfirmDialog
+        open={toDelete !== null}
+        title="Excluir tag"
+        description={
+          <>
+            A tag <strong className="text-white">{toDelete?.name}</strong>{' '}
+            {usage !== undefined
+              ? `é usada em ${usage} ${usage === 1 ? 'mundo' : 'mundos'} e será removida de todos`
+              : 'será removida de todos os mundos que a usam'}
+            . Essa ação não pode ser desfeita.
+          </>
+        }
+        confirmLabel="Excluir"
+        onClose={() => setToDelete(null)}
+        onConfirm={() => (toDelete ? deleteTag(toDelete) : undefined)}
+      />
     </div>
   );
 }

@@ -20,6 +20,7 @@ import {
   Map as MapIcon,
   PawPrint,
   Users,
+  Landmark,
   type LucideIcon,
 } from 'lucide-react';
 import ActivityStrip from '../components/activity/ActivityStrip';
@@ -49,6 +50,8 @@ interface Portal {
   description: string;
   Icon: LucideIcon;
   tone: string;
+  /** Tela ainda não construída: mostra o selo "Em breve". */
+  soon: boolean;
 }
 
 const PORTALS: Portal[] = [
@@ -58,24 +61,32 @@ const PORTALS: Portal[] = [
     description: 'Fichas, relações e documentos dos personagens.',
     Icon: Users,
     tone: 'text-rpg-secondary',
+    soon: false,
   },
-
   {
     path: 'racas-criaturas',
     title: 'Raças e Criaturas',
     description: 'Povos e seres do mundo, com perigo e nível.',
     Icon: PawPrint,
     tone: 'text-purple-400',
+    soon: false,
   },
-
+  {
+    path: 'grupos',
+    title: 'Grupos',
+    description: 'Organizações e religiões: guildas, ordens, cultos e facções.',
+    Icon: Landmark,
+    tone: 'text-amber-400',
+    soon: true,
+  },
   {
     path: 'mapas',
     title: 'Mapas',
-    description: 'Mapas interativos, locais e organizações.',
+    description: 'Mapas interativos e locais do mundo.',
     Icon: MapIcon,
     tone: 'text-green-400',
+    soon: true,
   },
-  
 ];
 
 export default function WorldOverview() {
@@ -133,8 +144,8 @@ export default function WorldOverview() {
             <p className="max-w-[70ch] leading-relaxed text-gray-300">{world.synopsis}</p>
           )}
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {PORTALS.map(({ path, title, description, Icon, tone }) => (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4  ">
+            {PORTALS.map(({ path, title, description, Icon, tone, soon }) => (
               <Card
                 key={path}
                 interactive
@@ -157,7 +168,9 @@ export default function WorldOverview() {
                         {title}
                       </Link>
                     </h3>
-                    {/* <Badge variant="neutral">Em breve</Badge> */}
+                    {soon && (
+                      <Badge variant="neutral">Em breve</Badge>
+                    )}
                   </div>
                   <p className="text-sm text-rpg-muted">{description}</p>
                   <span className="mt-auto inline-flex items-center gap-1 pt-2 text-sm font-bold text-rpg-primary">
@@ -229,7 +242,7 @@ export default function WorldOverview() {
             Páginas
           </p>
           <ul className="space-y-1">
-            {PORTALS.map(({ path, title, Icon }) => (
+            {PORTALS.map(({ path, title, Icon, soon }) => (
               <li key={path}>
                 <Link
                   to={`${base}/${path}`}
@@ -239,7 +252,8 @@ export default function WorldOverview() {
                     <Icon size={16} aria-hidden="true" />
                     {title}
                   </span>
-                  <ArrowRight size={14} aria-hidden="true" />
+                  {/* <ArrowRight size={14} aria-hidden="true" /> */}
+                  {soon ? <Badge variant="neutral">Em breve</Badge> : <ArrowRight size={14} aria-hidden="true" />}
                 </Link>
               </li>
             ))}

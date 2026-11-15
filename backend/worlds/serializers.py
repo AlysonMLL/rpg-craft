@@ -7,6 +7,14 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ['id', 'name', 'slug']
 
+class TagUsageSerializer(TagSerializer):
+    """Versão da listagem de tags: inclui em quantos mundos cada tag é usada."""
+
+    worlds_count = serializers.IntegerField(read_only=True)
+
+    class Meta(TagSerializer.Meta):
+        fields = TagSerializer.Meta.fields + ['worlds_count']
+
 
 class WorldSerializer(serializers.ModelSerializer):
     # Leitura: devolve os dados completos das tags, e não apenas o ID numérico

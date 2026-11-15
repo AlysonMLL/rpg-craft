@@ -14,6 +14,7 @@ export interface Tag {
   id: number;
   name: string;
   slug: string;
+  worlds_count?: number;
 }
 
 export interface World {
@@ -106,5 +107,14 @@ export const worldService = {
   // Ordem personalizada: envia os ids dos SEUS mundos na ordem desejada
   reorder: async (ids: number[]): Promise<void> => {
     await apiClient.post('worlds/reorder/', { ids });
+  },
+
+  deleteWorld: async (id: number): Promise<void> => {
+    await apiClient.delete(`worlds/${id}/`);
+  },
+
+  // Exclui a tag global (ela sai de todos os mundos que a usam)
+  deleteTag: async (id: number): Promise<void> => {
+    await apiClient.delete(`tags/${id}/`);
   },
 };

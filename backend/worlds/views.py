@@ -30,21 +30,34 @@ from activity.services import log_activity
 
 from .models import World, Tag
 from .permissions import IsOwnerOrReadOnly
-from .serializers import WorldSerializer, TagSerializer
+from .serializers import WorldSerializer, TagSerializer, TagUsageSerializer
 from characters.models import Character
 from peoples.models import Creature, Race
 
 
 
-class TagViewSet(mixins.CreateModelMixin, viewsets.ReadOnlyModelViewSet):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
+class TagViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.ReadOnlyModelViewSet):
+    # worlds_count: em quantos mundos a tag é usada (mostrado ao pedir para excluir)
+    queryset = Tag.objects.annotate(worlds_count=Count('worlds'))
+
+    def get_serializer_class(self):
+        return TagUsageSerializer if self.action in ('list', 'retrieve') else TagSerializer
 
     def get_permissions(self):
-        # Tags são públicas para leitura (popular selects); criar exige login
-        if self.action == 'create':
+        # Tags são públicas para leitura (popular selects); criar e excluir exigem login
+        if self.action in ('create', 'destroy'):
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
+
+    def destroy(self, request, *args, **kwargs):
+        tag = self.get_object()
+        # A tag é global: só apaga se todos os mundos que a usam são do próprio usuário
+        if tag.worlds.exclude(owner=request.user).exists():
+            return Response(
+                {'detail': 'Esta tag é usada por mundos de outras pessoas.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return super().destroy(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         name = ' '.join(str(request.data.get('name', '')).split())
