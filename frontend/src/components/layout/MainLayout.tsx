@@ -13,6 +13,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import GuestBanner from './GuestBanner';
 import PageBackground from './PageBackground';
+import Footer from './Footer';
 import { authService } from '../../api/auth';
 
 export default function MainLayout() {
@@ -36,6 +37,7 @@ export default function MainLayout() {
           {/* O Outlet é substituído pelo componente da página atual (ex: Home) */}
           <Outlet />
         </main>
+        <Footer />
       </div>
     </div>
   );

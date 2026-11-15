@@ -19,7 +19,7 @@ import { authService } from './api/auth';
 import Login from './pages/Login';
 import Home from './pages/Home'; // Dashboard principal
 import MainLayout from './components/layout/MainLayout';
-import { Map as MapIcon, PawPrint } from 'lucide-react';
+import { Map as MapIcon, Landmark } from 'lucide-react';
 import WorldLayout from './components/world/WorldLayout';
 import WorldOverview from './pages/WorldOverview';
 import WorldSectionPlaceholder from './pages/WorldSectionPlaceholder';
@@ -67,11 +67,21 @@ export default function App() {
             <Route index element={<WorldOverview />} />
             <Route path="personagens" element={<Characters />} />
             <Route
+              path="grupos"
+              element={
+                <WorldSectionPlaceholder
+                  title="Grupos"
+                  description="Organizações e religiões do mundo: guildas, ordens, cultos e facções, com seus membros."
+                  Icon={Landmark}
+                />
+              }
+            />
+            <Route
               path="mapas"
               element={
                 <WorldSectionPlaceholder
                   title="Mapas"
-                  description="Mapas interativos, locais e organizações do mundo."
+                  description="Mapas interativos e locais do mundo."
                   Icon={MapIcon}
                 />
               }

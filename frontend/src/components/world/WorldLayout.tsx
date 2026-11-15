@@ -10,7 +10,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ChevronLeft, LayoutGrid, Map as MapIcon, PawPrint, Users } from 'lucide-react';
+import { ChevronLeft, LayoutGrid, Map as MapIcon, PawPrint, Users, Landmark } from 'lucide-react';
 import { worldService, type World } from '../../api/worlds';
 import type { WorldContext } from '../../hooks/useWorld';
 import { coverGradient } from '../../lib/worldUtils';
@@ -19,11 +19,13 @@ import { Badge, Skeleton, toast } from '../ui';
 import { authService } from '../../api/auth';
 import { WorldTagsEditor } from './WorldTagsEditor';
 import { WorldCoverEditor } from './WorldCoverEditor';
+import { WorldSettings } from './WorldSettings';
 
 const TABS = [
   { path: '', label: 'Visão geral', Icon: LayoutGrid, soon: false },
   { path: 'personagens', label: 'Personagens', Icon: Users, soon: false },
   { path: 'racas-criaturas', label: 'Raças e Criaturas', Icon: PawPrint, soon: false },
+  { path: 'grupos', label: 'Grupos', Icon: Landmark, soon: true },
   { path: 'mapas', label: 'Mapas', Icon: MapIcon, soon: true },
 ];
 
@@ -93,8 +95,9 @@ export default function WorldLayout() {
           </Link>
         </div>
         {canEdit && (
-          <div className="absolute right-6 top-5 z-30 md:right-8">
+          <div className="absolute right-6 top-5 z-30 flex items-center gap-2 md:right-8">
             <WorldCoverEditor world={world} onSaved={setWorld} />
+            <WorldSettings world={world} onSaved={setWorld} />
           </div>
         )}
 

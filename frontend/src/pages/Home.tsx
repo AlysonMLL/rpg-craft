@@ -20,7 +20,8 @@ import TodosWidget from '../components/notebook/TodosWidget';
 import { authService } from '../api/auth';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import ActivityStrip from '../components/activity/ActivityStrip';
-import { Button } from '../components/ui';
+import { Badge, Button } from '../components/ui';
+
 
 export default function Home() {
   const [worlds, setWorlds] = useState<World[]>([]);
@@ -51,7 +52,7 @@ export default function Home() {
     <div className="min-h-screen text-gray-200 p-8 flex flex-col gap-8">
       {/* 1. TOPO: Header e Ações */}
       <header className="flex items-center justify-between">
-        <div className="relative w-full max-w-xl">
+        <div className="relative w-full max-w-xl opacity-50" title="A busca global chega em breve">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 text-rpg-subtle"
             size={20}
@@ -59,10 +60,14 @@ export default function Home() {
           />
           <input
             type="text"
-            aria-label="Buscar"
+            disabled
+            aria-label="Buscar (em breve)"
             placeholder="Buscar personagens, locais, eventos..."
-            className="w-full bg-rpg-card border border-gray-800 rounded-full py-2.5 pl-10 pr-4 text-sm placeholder:text-rpg-subtle focus:outline-none focus:border-rpg-primary transition-colors"
+            className="w-full cursor-not-allowed rounded-full border border-gray-800 bg-rpg-card py-2.5 pl-10 pr-28 text-sm placeholder:text-rpg-subtle"
           />
+          <Badge variant="neutral" className="absolute right-3 top-1/2 -translate-y-1/2 mr-2">
+            Em breve
+          </Badge>
         </div>
 
         <div className="flex items-center gap-4">
@@ -77,8 +82,10 @@ export default function Home() {
           </Button>
           <button
             type="button"
-            aria-label="Notificações"
-            className="p-2.5 bg-rpg-card border border-gray-800 rounded-lg hover:border-gray-600 transition-colors text-gray-400"
+            disabled
+            aria-label="Notificações (em breve)"
+            title="Notificações em breve"
+            className="cursor-not-allowed rounded-lg border border-gray-800 bg-rpg-card p-2.5 text-rpg-subtle"
           >
             <Bell size={20} />
           </button>
@@ -97,7 +104,7 @@ export default function Home() {
         <p className="text-gray-400 text-sm">
           {isGuest
             ? 'Explore os mundos de exemplo do RPG.Craft.'
-            : 'Bem-vindo de volta ao seu ateliê de mundos.'}
+            : 'Bem-vindo de volta ao seu gerenciador de mundos.'}
         </p>
       </div>
 
