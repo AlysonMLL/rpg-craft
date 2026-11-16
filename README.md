@@ -9,7 +9,7 @@
 
 # ⚔️ RPG.Craft | Seu Ateliê de Mundos de RPG
 
-Um site para mestres organizarem seus mundos de RPG em um só lugar: personagens e relações, raças e criaturas, lore em Markdown, linha do tempo com calendário próprio, missões e notas. Dois mundos de demonstração abrem sem cadastro, no modo convidado (somente leitura).
+Um site para mestres organizarem seus mundos de RPG em um só lugar: personagens e relações, raças e criaturas, lore em Markdown, linha do tempo com calendário próprio, missões e notas. Dois mundos de demonstração abrem sem cadastro, no modo convidado (somente leitura). Esse é um projeto que, particularmente, tive bastante vontade de tirar do papel após meses de ideias e planejamento, pois une meu trabalho como desenvolvedor, e também um hobby pessoal. O RPG.Craft ainda está em desenvolvimento e futuramente novos recursos e features serão lançadas.
 
 <br>
 
@@ -56,13 +56,17 @@ Acesse o site em: [RPG.Craft](https://rpg-craft-three.vercel.app/) (talvez seja 
 
 Cada mundo reúne tudo o que uma campanha precisa: a introdução e as missões na visão geral, a história em documentos `.md`, uma linha do tempo com o calendário do próprio mundo, personagens com ficha e relações, e o bestiário com raças e criaturas.
 
-<img width="1000" height="500" alt="rpgcraft_2" src="" />
+<img width="1000" height="500" alt="rpgcraft_2" src="https://github.com/user-attachments/assets/ed34b095-b727-4802-8b2b-67f879687dea" />
 
 ---
 
 Com tema escuro, design system próprio, edição direta nos campos (sem formulários longos) e navegação por teclado, a interface foi pensada para o mestre consultar e anotar durante a sessão sem perder o ritmo.
 
-<img width="1000" height="500" alt="rpgcraft_3" src="" />
+<img width="1000" height="500" alt="rpgcraft_4" src="https://github.com/user-attachments/assets/d597f355-e425-47c6-b46d-9d71efe328e3" />
+
+---
+
+<img width="1000" height="500" alt="rpgcraft_5" src="https://github.com/user-attachments/assets/ef51adac-ad53-4364-92b5-dd5732331098" />
 
 <br>
 
