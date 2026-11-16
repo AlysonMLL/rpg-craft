@@ -118,7 +118,7 @@ export default function WorldLayout() {
       {/* Barra de abas fixa */}
       <nav
         aria-label="Seções do mundo"
-        className="sticky top-0 z-30 border-b border-gray-800 bg-rpg-bg/90 backdrop-blur"
+        className="sticky top-14 md:top-0 z-30 border-b border-gray-800 bg-rpg-bg/90 backdrop-blur"
       >
         <div className="mx-auto flex w-full max-w-7xl flex-wrap gap-x-6 px-6 md:px-8">
           {TABS.map(({ path, label, Icon, soon }) => (

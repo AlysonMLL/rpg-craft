@@ -1,132 +1,161 @@
 /**
+ * Função do Arquivo: Modal "Novo mundo" (Home e /mundos). Pede nome e sinopse (obrigatórios),
+ * tags e se o mundo é público (demo). As tags são carregadas ao abrir. O formulário fica
+ * dentro do Modal, então reinicia a cada abertura. Mantém as props antigas (isOpen, onClose,
+ * onSuccess) para quem o usa não precisar mudar.
+ *
  * O que há aqui:
- * - Modal interativo para criação de um novo Mundo/Campanha.
- * - Busca automática de Tags via useEffect assim que o modal abre.
- * - Seleção múltipla de tags (array de IDs) através de botões com estilo condicional.
- * 
- * Função do arquivo: Interface rápida de inserção de dados. 
- * Permite ao usuário criar instâncias no banco de dados sem sair do Dashboard.
+ * - CreateWorldModal (export default): o modal.
+ * - CreateForm (interno): estado, validação, envio e toast "Mundo criado".
  */
 
-import { useState, useEffect } from 'react';
-import { X, Sparkles, Tag as TagIcon } from 'lucide-react';
-import { worldService, type WorldCreateData, type Tag } from '../../api/worlds';
+import { useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
+import { Sparkles, Tag as TagIcon } from 'lucide-react';
+import { worldService, type Tag } from '../../api/worlds';
+import { cn } from '../../lib/cn';
+import { Button, Input, Modal, Textarea, toast } from '../ui';
 
-interface Props {
+interface CreateWorldModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function CreateWorldModal({ isOpen, onClose, onSuccess }: Props) {
-  const [formData, setFormData] = useState<WorldCreateData>({ name: '', synopsis: '', is_demo: false, tag_ids: [] });
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+function CreateForm({ onClose, onSuccess }: Omit<CreateWorldModalProps, 'isOpen'>) {
+  const [name, setName] = useState('');
+  const [synopsis, setSynopsis] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [tagIds, setTagIds] = useState<number[]>([]);
+  const [errors, setErrors] = useState<{ name?: string; synopsis?: string }>({});
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      worldService.getAllTags().then(setAvailableTags).catch(console.error);
-    }
-  }, [isOpen]);
+    let active = true;
+    worldService
+      .getAllTags()
+      .then((list) => {
+        if (active) setTags([...list].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')));
+      })
+      .catch(() => toast.error('Não foi possível carregar as tags.'));
+    return () => {
+      active = false;
+    };
+  }, []);
 
-  if (!isOpen) return null;
+  const toggleTag = (id: number) =>
+    setTagIds((previous) => (previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id]));
 
-  const toggleTag = (tagId: number) => {
-    setFormData(prev => {
-      const isSelected = prev.tag_ids.includes(tagId);
-      return {
-        ...prev,
-        tag_ids: isSelected 
-          ? prev.tag_ids.filter(id => id !== tagId) 
-          : [...prev.tag_ids, tagId]
-      };
-    });
-  };
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    const cleanName = name.replace(/\s+/g, ' ').trim();
+    const cleanSynopsis = synopsis.trim();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+    const found: { name?: string; synopsis?: string } = {};
+    if (!cleanName) found.name = 'Informe o nome do mundo.';
+    if (!cleanSynopsis) found.synopsis = 'Escreva uma sinopse breve.';
+    setErrors(found);
+    if (found.name || found.synopsis) return;
+
+    setSaving(true);
     try {
-      await worldService.createWorld(formData);
+      await worldService.createWorld({ name: cleanName, synopsis: cleanSynopsis, is_demo: isPublic, tag_ids: tagIds });
+      toast.success('Mundo criado');
       onSuccess();
-      setFormData({ name: '', synopsis: '', is_demo: false, tag_ids: [] }); // Reseta o form
       onClose();
-    } catch (error) {
-      console.error("Erro ao criar mundo:", error);
-      alert("Falha ao forjar o mundo.");
+    } catch {
+      toast.error('Não foi possível criar o mundo. Tente de novo.');
     } finally {
-      setIsLoading(false);
+      setSaving(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-rpg-card border border-gray-700 w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
-        <div className="flex items-center justify-between p-5 border-b border-gray-800">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Sparkles className="text-rpg-primary" size={20} /> Forjar Novo Mundo
-          </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
-            <X size={24} />
-          </button>
-        </div>
+    <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      <Input
+        label="Nome do mundo"
+        required
+        maxLength={100}
+        autoFocus
+        value={name}
+        error={errors.name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <Textarea
+        label="Sinopse breve"
+        required
+        rows={3}
+        value={synopsis}
+        error={errors.synopsis}
+        onChange={(e) => setSynopsis(e.target.value)}
+      />
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-5">
-          {/* Inputs de Nome e Sinopse iguais aos anteriores... */}
-          <div>
-            <label className="block text-gray-400 text-sm font-medium mb-1">Nome do Mundo / Campanha *</label>
-            <input required type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full bg-rpg-bg text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:border-rpg-primary focus:outline-none" />
+      {tags.length > 0 && (
+        <fieldset>
+          <legend className="mb-2 flex items-center gap-1.5 text-sm font-medium text-rpg-muted">
+            <TagIcon size={14} aria-hidden="true" /> Gêneros e tags
+          </legend>
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => {
+              const on = tagIds.includes(tag.id);
+              return (
+                <button
+                  key={tag.id}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => toggleTag(tag.id)}
+                  className={cn(
+                    'min-h-8 rounded border px-3 py-1 text-xs font-bold transition-colors',
+                    on
+                      ? 'border-rpg-secondary bg-rpg-secondary/20 text-rpg-secondary'
+                      : 'border-gray-700 bg-rpg-bg text-rpg-muted hover:border-gray-500',
+                  )}
+                >
+                  {tag.name}
+                </button>
+              );
+            })}
           </div>
-          
-          <div>
-            <label className="block text-gray-400 text-sm font-medium mb-1">Sinopse Breve *</label>
-            <textarea required rows={2} value={formData.synopsis} onChange={(e) => setFormData({...formData, synopsis: e.target.value})} className="w-full bg-rpg-bg text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:border-rpg-primary focus:outline-none resize-none" />
-          </div>
+        </fieldset>
+      )}
 
-          {/* Seleção de Tags */}
-          <div>
-            <label className="block text-gray-400 text-sm font-medium mb-2 flex items-center gap-1">
-              <TagIcon size={14} /> Gêneros e Tags
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {availableTags.map(tag => {
-                const isSelected = formData.tag_ids.includes(tag.id);
-                return (
-                  <button
-                    key={tag.id}
-                    type="button"
-                    onClick={() => toggleTag(tag.id)}
-                    className={`px-3 py-1 text-xs font-bold rounded border transition-colors ${
-                      isSelected 
-                        ? 'bg-rpg-secondary/20 text-rpg-secondary border-rpg-secondary' 
-                        : 'bg-rpg-bg text-gray-400 border-gray-700 hover:border-gray-500'
-                    }`}
-                  >
-                    {tag.name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-800 p-3 transition-colors hover:bg-gray-800/50">
+        <input
+          type="checkbox"
+          checked={isPublic}
+          onChange={(e) => setIsPublic(e.target.checked)}
+          className="mt-0.5 h-4 w-4 accent-rpg-primary"
+        />
+        <span>
+          <span className="block text-sm font-medium text-white">Mundo público (demo)</span>
+          <span className="block text-xs text-rpg-subtle">
+            Visitantes poderão ver este mundo sem fazer login. Os segredos do mestre ficam ocultos para eles.
+          </span>
+        </span>
+      </label>
 
-          <label className="flex items-center gap-3 cursor-pointer p-3 border border-gray-800 rounded-lg hover:bg-gray-800/50 transition-colors">
-            <input type="checkbox" checked={formData.is_demo} onChange={(e) => setFormData({...formData, is_demo: e.target.checked})} className="w-4 h-4 accent-rpg-primary" />
-            <div>
-              <p className="text-white text-sm font-medium">Mundo Público (Demo)</p>
-              <p className="text-gray-500 text-xs">Visitantes poderão visualizar este mundo sem fazer login.</p>
-            </div>
-          </label>
-
-          <div className="pt-2 flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 bg-gray-800 text-white font-medium py-2.5 rounded-lg hover:bg-gray-700 transition-colors">Cancelar</button>
-            <button type="submit" disabled={isLoading} className="flex-1 bg-rpg-primary text-black font-bold py-2.5 rounded-lg hover:bg-[#c5cc04] transition-colors disabled:opacity-50">
-              {isLoading ? 'Criando...' : 'Criar Mundo'}
-            </button>
-          </div>
-        </form>
+      <div className="flex justify-end gap-3 border-t border-gray-800 pt-4">
+        <Button variant="secondary" onClick={onClose}>
+          Cancelar
+        </Button>
+        <Button type="submit" loading={saving}>
+          Criar mundo
+        </Button>
       </div>
-    </div>
+    </form>
   );
 }
 
+export default function CreateWorldModal({ isOpen, onClose, onSuccess }: CreateWorldModalProps) {
+  return (
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title="Novo mundo"
+      icon={<Sparkles size={20} className="text-rpg-primary" aria-hidden="true" />}
+    >
+      <CreateForm onClose={onClose} onSuccess={onSuccess} />
+    </Modal>
+  );
+}

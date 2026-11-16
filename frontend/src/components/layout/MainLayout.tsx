@@ -14,6 +14,7 @@ import Sidebar from './Sidebar';
 import GuestBanner from './GuestBanner';
 import PageBackground from './PageBackground';
 import Footer from './Footer';
+import MobileNav from './MobileNav';
 import { authService } from '../../api/auth';
 
 export default function MainLayout() {
@@ -27,8 +28,9 @@ export default function MainLayout() {
 
       {/* Navegação Lateral Fixa */}
       <Sidebar />
-
+      
       <div className="flex min-w-0 flex-1 flex-col">
+        <MobileNav />
         {isGuest && <GuestBanner />}
 
         {/* Área Principal de Conteúdo. Sem overflow aqui: ele quebraria o position: sticky

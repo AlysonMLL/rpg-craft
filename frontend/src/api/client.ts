@@ -23,8 +23,44 @@ export const apiClient = axios.create({
   },
 });
 
+// Aviso "servidor acordando": no plano gratuito da hospedagem o servidor hiberna e a primeira
+// requisição pode levar ~1 min. Se alguma passar de 4 s, quem escuta (ServerWakingNotice) avisa.
+type WakingListener = (waking: boolean) => void;
+const wakingListeners = new Set<WakingListener>();
+let pendingRequests = 0;
+let wakingTimer: number | undefined;
+let waking = false;
+
+export function onServerWaking(listener: WakingListener): () => void {
+  wakingListeners.add(listener);
+  return () => {
+    wakingListeners.delete(listener);
+  };
+}
+
+function setWaking(value: boolean) {
+  if (waking === value) return;
+  waking = value;
+  wakingListeners.forEach((listener) => listener(value));
+}
+
+function requestStarted() {
+  pendingRequests += 1;
+  if (wakingTimer === undefined) wakingTimer = window.setTimeout(() => setWaking(true), 4000);
+}
+
+function requestFinished() {
+  pendingRequests = Math.max(0, pendingRequests - 1);
+  if (pendingRequests === 0) {
+    window.clearTimeout(wakingTimer);
+    wakingTimer = undefined;
+    setWaking(false);
+  }
+}
+
 apiClient.interceptors.request.use(
   (config) => {
+    requestStarted();
     const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -33,6 +69,8 @@ apiClient.interceptors.request.use(
   },
   (error) => Promise.reject(error),
 );
+
+
 
 let refreshing: Promise<string> | null = null;
 
@@ -56,8 +94,8 @@ function endSession() {
 }
 
 apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  (response) => { requestFinished(); return response; },
+  async (error) => { requestFinished();
     const original = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
     const isAuthCall = original?.url?.includes('auth/token') ?? false;
     const canRetry =
