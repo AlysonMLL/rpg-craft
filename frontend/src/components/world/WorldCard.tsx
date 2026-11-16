@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { LucideIcon } from 'lucide-react';
-import { Clock, GripVertical, MapPin, Star, Users, Dna, PawPrint } from 'lucide-react';
+import { Clock, GripVertical, Star, Users, Dna, PawPrint } from 'lucide-react';
 import type { World } from '../../api/worlds';
 import { coverGradient } from '../../lib/worldUtils';
 import { cn } from '../../lib/cn';

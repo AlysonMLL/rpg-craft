@@ -26,7 +26,6 @@ import {
 import ActivityStrip from '../components/activity/ActivityStrip';
 import DocumentsSection from '../components/world/DocumentsSection';
 import SummarySection from '../components/world/SummarySection';
-import { SectionHeader } from '../components/world/SectionHeader';
 import TimelineSection from '../components/world/TimelineSection';
 import { Badge, Card } from '../components/ui';
 import { authService } from '../api/auth';
