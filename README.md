@@ -45,6 +45,7 @@ Acesse o site em: [RPG.Craft](https://rpg-craft-three.vercel.app/) (talvez seja 
 
 <img width="290" height="70" alt="PostgreSQL_zonalogo" src="https://github.com/user-attachments/assets/571efa63-8747-44e1-900a-cde7f7ead7a7" />
 <img width="220" height="70" alt="JSON Web Tokens (JWT)  - zonalogo" src="https://github.com/user-attachments/assets/c59325bc-876a-4b74-aa7c-300b82f02a7e" />
+<img width="170" height="70" alt="postman2-svgrepo" src="https://github.com/user-attachments/assets/330b59bc-b20f-4100-a47c-c1d06c2b2b63" />
 
 </p>
 <br>
@@ -298,6 +299,7 @@ Todas as rotas ficam sob `/api/`. As listas aceitam `?world=ID`, e a escrita exi
   <img src="https://img.shields.io/badge/node.js%20-%2343853D.svg?&style=for-the-badge&logo=node.js&logoColor=white" />
   <img src="https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white" />
   <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" />
+  <img src="https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=Postman&logoColor=white" />
   <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" />
   <img src="https://img.shields.io/badge/Visual%20Studio%20Code-0078d7.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white" />
   <img src="https://img.shields.io/badge/PyCharm-000000?style=for-the-badge&logo=PyCharm&logoColor=FFFFFF" />
