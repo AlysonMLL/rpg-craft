@@ -44,7 +44,9 @@ import {
   type CharacterSort,
 } from '../lib/characterUtils';
 
-const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(11.75rem,1fr))] gap-4';
+// const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(11.75rem,1fr))] gap-4';
+const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,13.00rem),13.00rem))] gap-6';
+
 
 export default function Characters() {
   const { world } = useWorldContext();
@@ -59,6 +61,7 @@ export default function Characters() {
   const [creating, setCreating] = useState(false);
   const [toDelete, setToDelete] = useState<CharacterListItem | null>(null);
 
+ 
   useEffect(() => {
     let active = true;
     setIsLoading(true);
@@ -175,7 +178,7 @@ export default function Characters() {
       },
     });
   };
-
+    
   const createButton = canEdit && (
     <Button variant="outline" size="sm" leftIcon={<Plus size={14} />} onClick={() => setCreating(true)}>
       Novo personagem
@@ -185,7 +188,10 @@ export default function Characters() {
   return (
     <section aria-label="Personagens">
       <h2 className="sr-only">Personagens</h2>
-
+      <>
+        <title>RPG.Craft | Personagens</title>
+        <meta name="description" content="Ficha de personagens do mundo" />
+      </>
       <Tabs
         idPrefix="char"
         ariaLabel="Seções de personagens"

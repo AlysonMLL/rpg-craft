@@ -27,6 +27,10 @@ export default function Worlds() {
 
   return (
     <div className="flex min-h-screen flex-col gap-6 p-8 text-gray-200">
+      <>
+        <title>RPG.Craft | Meus Mundos</title>
+        <meta name="description" content="Visão geral dos seus mundos de RPG" />
+      </>
       <nav aria-label="Você está em" className="text-sm text-rpg-muted">
         <Link to="/" className="transition-colors hover:text-white">
           Início

@@ -9,7 +9,7 @@
  */
 import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import {
   ArrowRight,
   BookOpen,
@@ -91,6 +91,9 @@ const PORTALS: Portal[] = [
 
 export default function WorldOverview() {
   const world = useWorld();
+  useLayoutEffect(() => {
+    document.title = `RPG.Craft | ${world.name}`;
+  }, [world.name]);
   const active = useScrollSpy(SECTION_IDS);
   const base = `/world/${world.id}`;
   const canEdit = world.is_owner && !authService.isGuest();
@@ -109,6 +112,11 @@ export default function WorldOverview() {
 
   return (
     <div className="flex items-start gap-8 lg:gap-12">
+      <>
+        {/* <title>RPG.Craft | Visão Geral do Mundo</title> */}
+        <title>RPG.Craft | {world.name}</title>
+        <meta name="description" content="Visão geral do mundo de RPG" />
+      </>
       <div className="min-w-0 flex-1 space-y-14">
         {/* Início */}
         <section id="inicio" aria-labelledby="inicio-titulo" className="scroll-mt-24 space-y-6">

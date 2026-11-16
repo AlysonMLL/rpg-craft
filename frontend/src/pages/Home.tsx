@@ -50,6 +50,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen text-gray-200 p-8 flex flex-col gap-8">
+      <>
+        <title>RPG.Craft | Crie e gerencie seus mundos de RPG</title>
+        <meta name="description" content="Crie e gerencie seus mundos de RPG" />
+      </>
       {/* 1. TOPO: Header e Ações */}
       <header className="flex items-center justify-between">
         <div className="relative w-full max-w-xl opacity-50" title="A busca global chega em breve">

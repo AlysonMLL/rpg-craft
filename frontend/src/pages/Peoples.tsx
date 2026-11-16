@@ -90,6 +90,10 @@ export default function Peoples() {
 
   return (
     <section aria-label="Raças e Criaturas">
+      <>
+        <title>RPG.Craft | Raças e Criaturas</title>
+        <meta name="description" content="Ficha das raças e criaturas do mundo" />
+      </>
       <h2 className="sr-only">Raças e Criaturas</h2>
 
       <Tabs

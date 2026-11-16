@@ -40,6 +40,10 @@ export default function Notebook() {
 
   return (
     <div className="flex min-h-screen flex-col gap-6 p-8 text-gray-200">
+      <>
+        <title>RPG.Craft | Notebook</title>
+        <meta name="description" content="Gerencie suas anotações e tarefas" />
+      </>
       <header>
         <h1 className="text-3xl font-bold text-white">Notebook</h1>
         <p className="text-sm text-rpg-muted">

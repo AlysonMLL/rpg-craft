@@ -63,6 +63,10 @@ export default function Login() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-rpg-bg">
+      <>
+        <title>RPG.Craft | Login</title>
+        <meta name="description" content="Faça login para acessar sua conta" />
+      </>
       {/* Fundo: mapa + camadas de escurecimento para manter o texto legível */}
       <div
         aria-hidden="true"
