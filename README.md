@@ -43,8 +43,8 @@ Acesse o site em: [RPG.Craft](https://rpg-craft-three.vercel.app/) (talvez seja 
 
 <p align="center">
 
-<img width="290" height="70" alt="PostgreSQL_zonalogo" src="https://github.com/user-attachments/assets/571efa63-8747-44e1-900a-cde7f7ead7a7" />
 <img width="220" height="70" alt="JSON Web Tokens (JWT)  - zonalogo" src="https://github.com/user-attachments/assets/c59325bc-876a-4b74-aa7c-300b82f02a7e" />
+<img width="290" height="70" alt="PostgreSQL_zonalogo" src="https://github.com/user-attachments/assets/571efa63-8747-44e1-900a-cde7f7ead7a7" />
 <img width="170" height="70" alt="postman2-svgrepo" src="https://github.com/user-attachments/assets/330b59bc-b20f-4100-a47c-c1d06c2b2b63" />
 
 </p>
