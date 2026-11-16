@@ -50,7 +50,7 @@ Acesse o site em: [RPG.Craft](https://rpg-craft-three.vercel.app/) (talvez seja 
 </p>
 <br>
 
-<img width="1000" height="500" alt="rpgcraft_1" src="" />
+<img width="1000" height="500" alt="rpgcraft_1" src="https://github.com/user-attachments/assets/8b5d27fc-8923-430d-aba1-2de31992441d" />
 
 ---
 
