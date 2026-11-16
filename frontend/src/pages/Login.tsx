@@ -71,7 +71,7 @@ export default function Login() {
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/BG-Login.png')" }}
+        style={{ backgroundImage: "url('/BG-Login.webp')" }}
       />
       <div aria-hidden="true" className="absolute inset-0 bg-rpg-bg/70 lg:bg-transparent" />
       <div
